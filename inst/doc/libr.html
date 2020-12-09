@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="David J. Bosak" />
+
+<meta name="date" content="2020-12-07" />
+
+<title>Creates Data Libraries and Dictionaries</title>
+
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+<style type="text/css">
+a.anchor-section {margin-left: 10px; visibility: hidden; color: inherit;}
+a.anchor-section::before {content: '#';}
+.hasAnchor:hover a.anchor-section {visibility: visible;}
+</style>
+<script>// Anchor sections v1.0 written by Atsushi Yasumoto on Oct 3rd, 2020.
+document.addEventListener('DOMContentLoaded', function() {
+  // Do nothing if AnchorJS is used
+  if (typeof window.anchors === 'object' && anchors.hasOwnProperty('hasAnchorJSLink')) {
+    return;
+  }
+
+  const h = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+
+  // Do nothing if sections are already anchored
+  if (Array.from(h).some(x => x.classList.contains('hasAnchor'))) {
+    return null;
+  }
+
+  // Use section id when pandoc runs with --section-divs
+  const section_id = function(x) {
+    return ((x.classList.contains('section') || (x.tagName === 'SECTION'))
+            ? x.id : '');
+  };
+
+  // Add anchors
+  h.forEach(function(x) {
+    const id = x.id || section_id(x.parentElement);
+    if (id === '') {
+      return null;
+    }
+    let anchor = document.createElement('a');
+    anchor.href = '#' + id;
+    anchor.classList = ['anchor-section'];
+    x.classList.add('hasAnchor');
+    x.appendChild(anchor);
+  });
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Creates Data Libraries and Dictionaries</h1>
+<h4 class="author">David J. Bosak</h4>
+<h4 class="date">2020-12-07</h4>
+
+
+
+<div id="libr" class="section level1">
+<h1>libr <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/PjwhRE9DVFlQRSBzdmcgIFBVQkxJQyAnLS8vVzNDLy9EVEQgU1ZHIDEuMS8vRU4nICAnaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkJz48c3ZnIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDEwMCAxMDAiIGlkPSJMYXllcl8xIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAxMDAgMTAwIiB4bWw6c3BhY2U9InByZXNlcnZlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj48cGF0aCBkPSJNNzguNDAzLDM3LjIzaC02LjgzNWMzLjA1NS0xLjcyNiw0LjY3Ni0yLjE5OSw0LjY3Ni01Ljg0YzAtNC40My0wLjYxMy03LjQ4MS00LjMwNy03LjQ4MUg0Ny4yMzEgIEwxOS44NDYsMzQuODI2Yy0wLjIyNSwwLjA5LTAuMzcyLDAuMzA3LTAuMzcyLDAuNTQ5YzAsMC4zOTksMC4zMjMsMC43MjIsMC43MjIsMC43MjJjMS41LDAuNjYxLDIuNDY4LDIuNDAzLDIuNDY4LDUuMjE0ICBjMCw0LjU2Ni0xLjU0Myw1LjcwNS0yLjYwOSw2LjEzMWMtMC4zMjEsMC0wLjU4MSwwLjI2LTAuNTgxLDAuNTgxdjAuNjYxYzAsMC4yMDUsMC4wODIsMC40MDEsMC4yMjcsMC41NDZzMC4zNDIsMC4yMjYsMC41NDcsMC4yMjUgIGMxLjM4Mi0wLjAwNCw0LjMzLTAuMDExLDYuNDcxLTAuMDExYzIuMTQ4LDEsMi40OTMsMy43MDQsMi4zNzIsNi4wN2wtMTEuMzk3LDUuODg2Yy0wLjI0NywwLjEyNy0wLjQwMSwwLjM4Mi0wLjQwMSwwLjY1OSAgYzAsMC4zNzEsMC4zLDAuNjg3LDAuNjcxLDAuNjg3aDAuMDUxYzEuNSwwLjY2MSwyLjQ2NywyLjM4NywyLjQ2Nyw1LjE5OGMwLDQuNTY2LTEuNTQyLDUuNzA1LTIuNjA4LDYuMTMxICBjLTAuMzIxLDAtMC41ODEsMC4yNi0wLjU4MSwwLjU4MXYwLjUzNmMwLDAuNDk2LDAuNDAyLDAuODk4LDAuODk4LDAuODk4aDI1LjI1YzIuMDMxLDAsMy40NDQtMC4yNTYsNC40MDMtMC42OTYgIGM1LjY1NS0yLjU5NiwyMS43MTUtMTEuNTk2LDIyLjg5MS0xMi4zMDFjMS4zNzUtMC44MjQsMy4zMjgtMS4zNzMsMy4zMjgtNS4wN2MwLTEuOTY5LTAuMTQxLTMuNjQxLTAuNi00LjkxOSAgYzMuMTE3LTEuNzI2LDUuNDk1LTMuMDcsNS45Mi0zLjMyNGMxLjM3NS0wLjgyNCwzLjMyOC0xLjM3MywzLjMyOC01LjA3QzgyLjcwOSw0MC4yODEsODIuMDk2LDM3LjIzLDc4LjQwMywzNy4yM3ogTTIzLjQzNCw0Ny40NDMgIGMxLjQwMi0yLjA2NywxLjYyNi00Ljk1MywxLjYyNi02LjEzMWMwLTIuNDQtMC43MjUtNC4wOTMtMS40NzQtNS4yMTRoMjEuNTk5YzMuNjkzLDAsNC43MDMsMi4yNDksNC43MDMsNS4yOTggIGMwLDMuNy0wLjk3Miw2LjA0Ny00Ljc4OSw2LjA0N0gyMy40MzR6IE00Mi45MTYsNzQuMDc2SDIxLjI1MWMxLjQwMi0yLjA2NywxLjYyNi00Ljk1MywxLjYyNi02LjEzMWMwLTIuNDQtMC43MjUtNC4wNzctMS40NzQtNS4xOTggIGMwLDAsMTQuNTI0LDAsMjIuMTg3LDBjMy4xOSwwLjI0Miw0LjExNiwyLjQxLDQuMTE2LDUuMjgzQzQ3LjcwNiw3MS43MjksNDYuNzMzLDc0LjA3Niw0Mi45MTYsNzQuMDc2eiBNNTEuNTY0LDYwLjc2NEgyOS44OTkgIGMxLjQwMi0yLjA2NywxLjYyNi00Ljk1MywxLjYyNi02LjEzMWMwLTIuNDE1LTAuNzExLTQuMDY4LTEuNDUxLTUuMTg4SDUxLjY1YzMuNjkzLDAsNC43MDMsMi4yMjMsNC43MDMsNS4yNzMgIEM1Ni4zNTQsNTguNDE3LDU1LjM4MSw2MC43NjQsNTEuNTY0LDYwLjc2NHoiIGZpbGw9IiM2NTY1NjUiLz48L3N2Zz4=" align="right" height="138" /></h1>
+<p>The <strong>libr</strong> package brings the concepts of data libraries, data dictionaries, and data steps to R. A data library is an object used to define and manage an entire directory of data files. A data dictionary is a data frame full of information about a data library, data frame, or tibble. A data step is a mechanism to perform row-by-row processing of data.</p>
+<div id="glossary" class="section level3">
+<h3>Glossary</h3>
+<p>The functions contained in the <strong>libr</strong> package are as follows:</p>
+<div id="library-functions" class="section level4">
+<h4>Library Functions</h4>
+<ul>
+<li><code>libname()</code>: Creates a data library</li>
+<li><code>lib_load()</code>: Loads a library into the workspace</li>
+<li><code>lib_unload()</code>: Unloads a library from the workspace</li>
+<li><code>lib_sync()</code>: Synchronizes the workspace with the library list</li>
+<li><code>lib_write()</code>: Writes library data to the file system</li>
+<li><code>lib_add()</code>: Adds data to a library</li>
+<li><code>lib_replace()</code>: Replaces data in a library</li>
+<li><code>lib_remove()</code>: Removes data from a library</li>
+<li><code>lib_copy()</code>: Copies a data library</li>
+<li><code>lib_delete()</code>: Deletes a data library</li>
+<li><code>lib_info()</code>: Returns a data frame of information about the library</li>
+<li><code>lib_path()</code>: Returns the path of a data library</li>
+<li><code>lib_size()</code>: Returns the size of the data library in bytes</li>
+</ul>
+</div>
+<div id="import-specs-functions" class="section level4">
+<h4>Import Specs Functions</h4>
+<ul>
+<li><code>specs()</code>: Define import specs for a libname</li>
+<li><code>import_spec()</code>: Define an import spec for a specific file</li>
+<li><code>write.specs()</code>: Writes a specs object to the file system</li>
+<li><code>read.specs()</code>: Reads a specs file from the file system</li>
+</ul>
+</div>
+<div id="other-functions" class="section level4">
+<h4>Other Functions</h4>
+<ul>
+<li><code>dictionary()</code>: Creates a data dictionary</li>
+<li><code>datastep()</code>: Perform row-by-row processing of data</li>
+<li><code>%eq%</code>: An infix operator to check equality between objects</li>
+</ul>
+</div>
+</div>
+<div id="libnames-and-dictionaries" class="section level2">
+<h2>Libnames and Dictionaries</h2>
+<p>The main motivation for developing the <strong>libr</strong> package is to create and use data libraries and data dictionaries. These concepts are useful when dealing with sets of related data files. The <code>libname()</code> function allows you to define a library for an entire directory of data files. The library can then be manipulated as a whole using the <code>lib_*</code> functions in the <strong>libr</strong> package.</p>
+<div id="basic-library-operations" class="section level3">
+<h3>Basic Library Operations</h3>
+<p>There are four main <strong>libr</strong> functions for creating and using a data library:</p>
+<ul>
+<li><code>libname()</code></li>
+<li><code>lib_load()</code></li>
+<li><code>lib_unload()</code></li>
+<li><code>lib_write()</code></li>
+</ul>
+<p>The <code>libname()</code> function creates a data library. The function has parameters for the library name and a directory to associate it with. If the directory has existing data files, those data files will be automatically loaded into the library. Once in the library, the data can be accessed using list syntax.</p>
+<p>You may create a data library for several different types of files: ‘rds’, ‘csv’, ‘xlsx’, ‘xls’, ‘sas7bdat’, ‘xpt’, and ‘dbf’. The type of library is defined using the <code>engine</code> parameter on the <code>libname()</code> function. The default data engine is ‘rds’. The data engines will attempt to identify the correct data type for each column of data. You may also control the data type of the columns using the <code>import_specs</code> parameter and the <code>specs()</code> and <code>import_spec()</code> functions.</p>
+<p>If you prefer to access the data via the workspace, call the <code>lib_load()</code> function on the library. This function will load the library data into the parent frame, where it can be accessed using a two-level (&lt;library&gt;.&lt;dataset&gt;) name.</p>
+<p>When you are done with the data, call the <code>lib_unload()</code> function to remove the data from the parent frame and put it back in the library list. To write any added or modified data to disk, call the <code>lib_write()</code> function. The <code>lib_write()</code> function will only write data that has changed since the last write.</p>
+<p>The following example will illustrate some basic functionality of the <strong>libr</strong> package regarding the creation of libnames and use of dictionaries. The example first places some sample data in a temp directory for illustration purposes. Then the example creates a libname from the temp directory, loads it into memory, adds data to it, and then unloads and writes everything to disk:</p>
+<pre><code># Create temp directory
+tmp &lt;- tempdir()
+
+# Save some data to temp directory
+# for illustration purposes
+saveRDS(trees, file.path(tmp, &quot;trees.rds&quot;))
+saveRDS(rock, file.path(tmp, &quot;rocks.rds&quot;))
+
+# Create library
+libname(dat, tmp)
+# library &#39;dat&#39;: 2 items
+# - attributes: not loaded
+# - path: C:\Users\User\AppData\Local\Temp\RtmpCSJ6Gc
+# - items:
+#    Name Extension Rows Cols   Size        LastModified
+# 1 rocks       rds   48    4 3.1 Kb 2020-11-05 23:25:34
+# 2 trees       rds   31    3 2.4 Kb 2020-11-05 23:25:34
+
+# Examine data dictionary for library
+dictionary(dat)
+# A tibble: 7 x 9
+#   Name  Column Class   Label Description Format Width  Rows   NAs
+#   &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;   &lt;lgl&gt; &lt;lgl&gt;       &lt;lgl&gt;  &lt;lgl&gt; &lt;int&gt; &lt;int&gt;
+# 1 rocks area   integer NA    NA          NA     NA       48     0
+# 2 rocks peri   numeric NA    NA          NA     NA       48     0
+# 3 rocks shape  numeric NA    NA          NA     NA       48     0
+# 4 rocks perm   numeric NA    NA          NA     NA       48     0
+# 5 trees Girth  numeric NA    NA          NA     NA       31     0
+# 6 trees Height numeric NA    NA          NA     NA       31     0
+# 7 trees Volume numeric NA    NA          NA     NA       31     0
+
+# Load library
+lib_load(dat)
+
+# Examine workspace
+ls()
+# [1] &quot;dat&quot; &quot;dat.rocks&quot; &quot;dat.trees&quot; &quot;tmp&quot;
+
+# Use data from the library
+summary(dat.rocks)
+#      area            peri            shape              perm        
+# Min.   : 1016   Min.   : 308.6   Min.   :0.09033   Min.   :   6.30  
+# 1st Qu.: 5305   1st Qu.:1414.9   1st Qu.:0.16226   1st Qu.:  76.45  
+# Median : 7487   Median :2536.2   Median :0.19886   Median : 130.50  
+# Mean   : 7188   Mean   :2682.2   Mean   :0.21811   Mean   : 415.45  
+# 3rd Qu.: 8870   3rd Qu.:3989.5   3rd Qu.:0.26267   3rd Qu.: 777.50  
+# Max.   :12212   Max.   :4864.2   Max.   :0.46413   Max.   :1300.00 
+
+# Add data to the library
+dat.trees_subset &lt;- subset(dat.trees, Girth &gt; 11)
+
+# Add more data to the library
+dat.cars &lt;- mtcars
+
+# Unload the library from memory
+lib_unload(dat)
+
+# Examine workspace again
+ls()
+# [1] &quot;dat&quot; &quot;tmp&quot;
+
+# Write the library to disk
+lib_write(dat)
+# library &#39;dat&#39;: 4 items
+# - attributes: not loaded
+# - path: C:\Users\User\AppData\Local\Temp\RtmpCSJ6Gc
+# - items:
+#           Name Extension Rows Cols   Size        LastModified
+# 1        rocks       rds   48    4 3.1 Kb 2020-11-05 23:37:45
+# 2        trees       rds   31    3 2.4 Kb 2020-11-05 23:37:45
+# 3         cars       rds   32   11 7.3 Kb 2020-11-05 23:37:45
+# 4 trees_subset       rds   23    3 1.8 Kb 2020-11-05 23:37:45
+
+# Clean up
+lib_delete(dat)
+
+# Examine workspace again
+ls()
+# [1] &quot;tmp&quot;</code></pre>
+</div>
+<div id="manipulating-libraries" class="section level3">
+<h3>Manipulating Libraries</h3>
+<p>The <strong>libr</strong> package also contains a number of functions for manipulating data libraries. There are functions to add and remove data from a library, as well as copy or delete an entire library.</p>
+<p>The example below illustrates some of these additional functions. The example first creates a library and adds some data to it. The example then proceeds to copy it to another library and perform some manipulation of the data in the libraries. The example ends by looking at some of the metadata available for libraries:</p>
+<pre><code># Create temp directory
+tmp &lt;- tempdir()
+
+# Create libraries
+libname(s1, tmp)
+
+# Add data to library and adjust names
+lib_add(s1, state.name, state.area, state.region, state.abb,
+        name = c(&quot;name&quot;, &quot;area&quot;, &quot;region&quot;, &quot;abb&quot;))
+# # library &#39;s1&#39;: 4 items
+# - attributes: rds not loaded
+# - path: C:\Users\User\AppData\Local\Temp\RtmpqAMV6L
+# - items:
+#     Name Extension Rows Cols   Size        LastModified
+# 1   name       rds   50    1 4.4 Kb 2020-11-29 17:00:28
+# 2   area       rds   50    1 1.4 Kb 2020-11-29 17:00:28
+# 3 region       rds   50    1 1.9 Kb 2020-11-29 17:00:28
+# 4    abb       rds   50    1 4.1 Kb 2020-11-29 17:00:28
+
+# Copy library to backup location
+lib_copy(s1, s2, file.path(tmp, &quot;orig&quot;))
+# # library &#39;s2&#39;: 4 items
+# - attributes: rds not loaded
+# - path: C:\Users\User\AppData\Local\Temp\RtmpqAMV6L/orig
+# - items:
+#     Name Extension Rows Cols   Size        LastModified
+# 1   name       rds   50    1 4.4 Kb 2020-11-29 17:01:17
+# 2   area       rds   50    1 1.4 Kb 2020-11-29 17:01:17
+# 3 region       rds   50    1 1.9 Kb 2020-11-29 17:01:17
+# 4    abb       rds   50    1 4.1 Kb 2020-11-29 17:01:17
+
+# Remove data from library 1
+lib_remove(s1, name = c(&quot;name&quot;, &quot;area&quot;, &quot;region&quot;, &quot;abb&quot;))
+# # library &#39;s1&#39;: 0 items
+# - attributes: rds not loaded
+# - path: C:\Users\User\AppData\Local\Temp\RtmpqAMV6L
+# NULL
+
+# Load library 1 into memory
+lib_load(s1)
+
+s1.combined &lt;- data.frame(name = s2.name, abb = s2.abb, 
+                              area = s2.area, region = s2.region)
+
+s1.east &lt;- subset(s1.combined, region == &quot;Northeast&quot;)
+s1.west &lt;- subset(s1.combined, region == &quot;West&quot;)
+s1.north &lt;- subset(s1.combined, region == &quot;North Central&quot;)
+s1.south &lt;- subset(s1.combined, region == &quot;South&quot;)
+
+# Sync workspace with library list
+lib_sync(s1)
+# # library &#39;s1&#39;: 5 items
+# - attributes: rds loaded
+# - path: C:\Users\User\AppData\Local\Temp\RtmpqAMV6L
+# - items:
+#       Name Extension Rows Cols    Size LastModified
+# 1 combined        NA   50    4 12.7 Kb         &lt;NA&gt;
+# 2     east        NA    9    4  3.2 Kb         &lt;NA&gt;
+# 3    north        NA   12    4  3.5 Kb         &lt;NA&gt;
+# 4    south        NA   16    4    4 Kb         &lt;NA&gt;
+# 5     west        NA   13    4  3.6 Kb         &lt;NA&gt;
+
+# Save library 1 to disk
+lib_write(s1)
+# # library &#39;s1&#39;: 5 items
+# - attributes: rds loaded
+# - path: C:\Users\User\AppData\Local\Temp\RtmpqAMV6L
+# - items:
+#       Name Extension Rows Cols    Size        LastModified
+# 1 combined       rds   50    4 13.4 Kb 2020-11-29 17:03:40
+# 2     east       rds    9    4    4 Kb 2020-11-29 17:03:40
+# 3    north       rds   12    4  4.3 Kb 2020-11-29 17:03:40
+# 4    south       rds   16    4  4.8 Kb 2020-11-29 17:03:40
+# 5     west       rds   13    4  4.4 Kb 2020-11-29 17:03:40
+
+# View path
+lib_path(s1)
+# [1] &quot;C:\\Users\\User\\AppData\\Local\\Temp\\RtmpqAMV6L&quot;
+
+# View size
+lib_size(s1)
+# [1] 7175
+
+# View info
+lib_info(s1)
+#       Name Extension Rows Cols    Size        LastModified
+# 1 combined       rds   50    4 13.4 Kb 2020-11-29 17:03:40
+# 2     east       rds    9    4    4 Kb 2020-11-29 17:03:40
+# 3    north       rds   12    4  4.3 Kb 2020-11-29 17:03:40
+# 4    south       rds   16    4  4.8 Kb 2020-11-29 17:03:40
+# 5     west       rds   13    4  4.4 Kb 2020-11-29 17:03:40
+
+# Display dictionary
+dictionary(s1)
+# # A tibble: 20 x 10
+#    Name     Column Class     Label Description Format Width Justify  Rows   NAs
+#    &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt;       &lt;lgl&gt;  &lt;int&gt; &lt;chr&gt;   &lt;int&gt; &lt;int&gt;
+#  1 combined name   character NA    NA          NA        14 NA         50     0
+#  2 combined abb    character NA    NA          NA         2 NA         50     0
+#  3 combined area   numeric   NA    NA          NA        NA NA         50     0
+#  4 combined region factor    NA    NA          NA        NA NA         50     0
+#  5 east     name   character NA    NA          NA        13 NA          9     0
+#  6 east     abb    character NA    NA          NA         2 NA          9     0
+#  7 east     area   numeric   NA    NA          NA        NA NA          9     0
+#  8 east     region factor    NA    NA          NA        NA NA          9     0
+#  9 north    name   character NA    NA          NA        12 NA         12     0
+# 10 north    abb    character NA    NA          NA         2 NA         12     0
+# 11 north    area   numeric   NA    NA          NA        NA NA         12     0
+# 12 north    region factor    NA    NA          NA        NA NA         12     0
+# 13 south    name   character NA    NA          NA        14 NA         16     0
+# 14 south    abb    character NA    NA          NA         2 NA         16     0
+# 15 south    area   numeric   NA    NA          NA        NA NA         16     0
+# 16 south    region factor    NA    NA          NA        NA NA         16     0
+# 17 west     name   character NA    NA          NA        10 NA         13     0
+# 18 west     abb    character NA    NA          NA         2 NA         13     0
+# 19 west     area   numeric   NA    NA          NA        NA NA         13     0
+# 20 west     region factor    NA    NA          NA        NA NA         13     0
+
+# Unload library 1
+lib_unload(s1)
+
+# Clean up
+lib_delete(s1)
+lib_delete(s2)</code></pre>
+</div>
+</div>
+<div id="the-datastep-function" class="section level2">
+<h2>The Datastep Function</h2>
+<p>Normally, R processes data column-by-column. The data step allows you to process data row-by-row. Row-by-row processing of data is useful when you have related columns, and wish to perform conditional logic on those columns. The <code>datastep()</code> function allows you to realize this style of data processing. It is particularly advantageous when you wish to perform deeply nested conditional logic. It is also very useful for by-group processing.</p>
+<div id="example-1-simple-data-step" class="section level4">
+<h4>Example 1: Simple Data Step</h4>
+<p>Here is an example of a simple data step:</p>
+<pre><code># Add some columns to mtcars using data step logic
+df &lt;- datastep(mtcars[1:10, 1:3], {
+
+    if (mpg &gt;= 20) 
+      mpgcat &lt;- &quot;High&quot;
+    else 
+      mpgcat &lt;- &quot;Low&quot;
+      
+    recdt &lt;- as.Date(&quot;1974-06-10&quot;)
+    
+    if (cyl == 8)
+      is8cyl &lt;- TRUE
+
+  })
+  
+# View results  
+df
+#                    mpg cyl  disp      recdt mpgcat is8cyl
+# Mazda RX4         21.0   6 160.0 1974-06-10   High     NA
+# Mazda RX4 Wag     21.0   6 160.0 1974-06-10   High     NA
+# Datsun 710        22.8   4 108.0 1974-06-10   High     NA
+# Hornet 4 Drive    21.4   6 258.0 1974-06-10   High     NA
+# Hornet Sportabout 18.7   8 360.0 1974-06-10    Low   TRUE
+# Valiant           18.1   6 225.0 1974-06-10    Low     NA
+# Duster 360        14.3   8 360.0 1974-06-10    Low   TRUE
+# Merc 240D         24.4   4 146.7 1974-06-10   High     NA
+# Merc 230          22.8   4 140.8 1974-06-10   High     NA
+# Merc 280          19.2   6 167.6 1974-06-10    Low     NA
+</code></pre>
+</div>
+<div id="keep-drop-and-rename" class="section level3">
+<h3>Keep, Drop, and Rename</h3>
+<p>The data step has parameters to perform basic shaping of the resulting data frame. These parameters are ‘keep’, ‘drop’, and ‘rename’. For example, the above data step could have been performed by sending all columns into the data step, and keeping only the desired columns. Using the <code>keep</code> parameter also allows you to order the resulting columns.</p>
+<div id="example-2-keeping-data-step-variables" class="section level4">
+<h4>Example 2: Keeping Data Step Variables</h4>
+<pre><code># Keep and order output columns 
+df &lt;- datastep(mtcars[1:10,], 
+  keep = c(&quot;mpg&quot;, &quot;cyl&quot;, &quot;disp&quot;, &quot;mpgcat&quot;, &quot;recdt&quot;), {
+
+    if (mpg &gt;= 20) 
+      mpgcat &lt;- &quot;High&quot;
+    else 
+      mpgcat &lt;- &quot;Low&quot;
+      
+    recdt &lt;- as.Date(&quot;1974-06-10&quot;)
+    
+    if (cyl == 8)
+      is8cyl &lt;- TRUE
+
+  })
+  
+df
+#                    mpg cyl  disp mpgcat      recdt
+# Mazda RX4         21.0   6 160.0   High 1974-06-10
+# Mazda RX4 Wag     21.0   6 160.0   High 1974-06-10
+# Datsun 710        22.8   4 108.0   High 1974-06-10
+# Hornet 4 Drive    21.4   6 258.0   High 1974-06-10
+# Hornet Sportabout 18.7   8 360.0    Low 1974-06-10
+# Valiant           18.1   6 225.0    Low 1974-06-10
+# Duster 360        14.3   8 360.0    Low 1974-06-10
+# Merc 240D         24.4   4 146.7   High 1974-06-10
+# Merc 230          22.8   4 140.8   High 1974-06-10
+# Merc 280          19.2   6 167.6    Low 1974-06-10
+</code></pre>
+</div>
+</div>
+<div id="the-retain-parameter" class="section level3">
+<h3>The Retain Parameter</h3>
+<p>The retain parameter allows you to define variables that will be seeded with the value from the previous step. The retain option is useful for creating cumulative values or for performing conditions based on the value of the previous row.</p>
+<div id="example-3-drop-retain-and-rename-parameters" class="section level4">
+<h4>Example 3: Drop, Retain, and Rename Parameters</h4>
+<pre><code>df &lt;- datastep(mtcars[1:10, ],
+               drop = c(&quot;disp&quot;, &quot;hp&quot;, &quot;drat&quot;, &quot;qsec&quot;,
+                        &quot;vs&quot;, &quot;am&quot;, &quot;gear&quot;, &quot;carb&quot;),
+               retain = list(cumwt = 0 ),
+               rename = c(mpg = &quot;MPG&quot;, cyl = &quot;Cylinders&quot;, wt = &quot;Wgt&quot;,
+                          cumwt = &quot;Cumulative Wgt&quot;), {
+
+  cumwt &lt;- cumwt + wt
+
+ })
+
+df
+#                    MPG Cylinders   Wgt Cumulative Wgt
+# Mazda RX4         21.0         6 2.620          2.620
+# Mazda RX4 Wag     21.0         6 2.875          5.495
+# Datsun 710        22.8         4 2.320          7.815
+# Hornet 4 Drive    21.4         6 3.215         11.030
+# Hornet Sportabout 18.7         8 3.440         14.470
+# Valiant           18.1         6 3.460         17.930
+# Duster 360        14.3         8 3.570         21.500
+# Merc 240D         24.4         4 3.190         24.690
+# Merc 230          22.8         4 3.150         27.840
+# Merc 280          19.2         6 3.440         31.280
+</code></pre>
+</div>
+</div>
+<div id="by-group-processing" class="section level3">
+<h3>By Group Processing</h3>
+<p>The <code>datastep()</code> function also has the capabilities of performing by-group processing. A by-group is accomplished using the <code>by</code> parameter, and passing a vector of column names that define the group. Once a by-group is defined, the <code>first.</code> and <code>last.</code> automatic variables become active, which allow you to identify the boundaries between groups. Note that, by default, your data must be sorted properly before sending it into the data step. To turn the sort check off, set the <code>sort_check</code> parameter to FALSE.</p>
+<div id="example-4-by-groups" class="section level4">
+<h4>Example 4: By Groups</h4>
+<pre><code># Identify start and end of by-groups
+df &lt;- datastep(mtcars[1:10,], 
+  keep = c(&quot;mpg&quot;, &quot;cyl&quot;, &quot;gear&quot;, &quot;grp&quot;), 
+  by = c(&quot;gear&quot;), sort_check = FALSE, {
+
+    if (first. &amp; last.)
+      grp &lt;- &quot;Start - End&quot;
+    else if (first.)
+      grp &lt;- &quot;Start&quot;
+    else if (last.)
+      grp &lt;- &quot;End&quot;
+    else 
+      grp &lt;- &quot;-&quot;
+
+  })
+  
+df
+#                    mpg cyl gear   grp
+# Mazda RX4         21.0   6    4 Start
+# Mazda RX4 Wag     21.0   6    4     -
+# Datsun 710        22.8   4    4   End
+# Hornet 4 Drive    21.4   6    3 Start
+# Hornet Sportabout 18.7   8    3     -
+# Valiant           18.1   6    3     -
+# Duster 360        14.3   8    3   End
+# Merc 240D         24.4   4    4 Start
+# Merc 230          22.8   4    4     -
+# Merc 280          19.2   6    4   End
+</code></pre>
+</div>
+</div>
+<div id="using-summary-functions" class="section level3">
+<h3>Using Summary Functions</h3>
+<p>There may be times when you want to combine row-by-row conditional processing with column-by-column vector operations. For example, let’s say you want to calculate a mean and then perform conditional processing on that mean. This situation can be handled using the <code>calculate</code> parameter on the <code>datastep()</code> function. The function will execute the <code>calculate</code> block first, add any assigned variables to the data frame, and then execute the data step. Below is an example of such a scenario:</p>
+<div id="example-5-calculate-block" class="section level4">
+<h4>Example 5: Calculate Block</h4>
+<pre><code># Categorize mpg as above or below the mean
+df &lt;- datastep(mtcars, 
+  keep = c(&quot;mpg&quot;, &quot;cyl&quot;, &quot;mean_mpg&quot;, &quot;mpgcat&quot;), 
+  calculate = { mean_mpg = mean(mpg) },
+  {
+
+    if (mpg &gt;= mean_mpg)
+      mpgcat &lt;- &quot;High&quot;
+    else 
+      mpgcat &lt;- &quot;Low&quot;
+
+  })
+  
+df[1:10,]
+#                    mpg cyl mean_mpg mpgcat
+# Mazda RX4         21.0   6 20.09062   High
+# Mazda RX4 Wag     21.0   6 20.09062   High
+# Datsun 710        22.8   4 20.09062   High
+# Hornet 4 Drive    21.4   6 20.09062   High
+# Hornet Sportabout 18.7   8 20.09062    Low
+# Valiant           18.1   6 20.09062    Low
+# Duster 360        14.3   8 20.09062    Low
+# Merc 240D         24.4   4 20.09062   High
+# Merc 230          22.8   4 20.09062   High
+# Merc 280          19.2   6 20.09062    Low
+</code></pre>
+</div>
+</div>
+<div id="data-steps-with-dplyr" class="section level3">
+<h3>Data Steps with <code>dplyr</code></h3>
+<p>Note that the <code>datastep()</code> function is pipe-friendly, and can be combined with <strong>dplyr</strong> functions in a data pipeline. Also note that the <code>datastep()</code> function will recognize any group attributes added by the <code>group_by()</code> function. Therefore, within a <strong>dplyr</strong> pipeline, it is not necessary to use any <code>datastep</code> parameters. The following example recreates the above data frame from Example 5, but with a <strong>dplyr</strong> pipeline.</p>
+<div id="example-6-data-pipeline" class="section level4">
+<h4>Example 6: Data Pipeline</h4>
+<pre><code>library(dplyr)
+library(magrittr)
+
+# Add datastep to dplyr pipeline
+df &lt;- mtcars %&gt;% 
+  select(mpg, cyl, gear) %&gt;% 
+  mutate(mean_mpg = mean(mpg)) %&gt;% 
+  datastep({
+
+    if (mpg &gt;= mean_mpg)
+      mpgcat &lt;- &quot;High&quot;
+    else 
+      mpgcat &lt;- &quot;Low&quot;
+
+  }) %&gt;% 
+  filter(row_number() &lt;= 10)
+  
+df
+#     mpg cyl gear mean_mpg mpgcat
+# 1  21.0   6    4 20.09062   High
+# 2  21.0   6    4 20.09062   High
+# 3  22.8   4    4 20.09062   High
+# 4  21.4   6    3 20.09062   High
+# 5  18.7   8    3 20.09062    Low
+# 6  18.1   6    3 20.09062    Low
+# 7  14.3   8    3 20.09062    Low
+# 8  24.4   4    4 20.09062   High
+# 9  22.8   4    4 20.09062   High
+# 10 19.2   6    4 20.09062    Low
+</code></pre>
+</div>
+</div>
+</div>
+<div id="enhanced-equality-operator-eq" class="section level2">
+<h2>Enhanced Equality Operator <code>%eq%</code></h2>
+<p>Lastly, the <strong>libr</strong> package contains an enhanced equality operator. The objective of the <code>%eq%</code> operator is to return a TRUE or FALSE value when any two objects are compared. This enhanced equality operator is useful for situations when you don’t want to check for NULL or NA values, or care about the data types of the objects you are comparing.</p>
+<p>The <code>%eq%</code> operator also compares data frames. The comparison will include all data values, but no attributes. This functionality is particularly useful when comparing tibbles, as tibbles often have many attributes assigned by <code>dplyr</code> functions.</p>
+<p>While it can be advantageous to have a comparison operator that does not give errors when encountering a NULL or NA value, note that this behavior can also mask problems with your code. Therefore, use the <code>%eq%</code> operator with care.</p>
+<p>Below is an example of several comparisons using the <code>%eq%</code> infix operator:</p>
+<pre><code># Comparing of NULLs and NA
+NULL %eq% NULL        # TRUE
+NULL %eq% NA          # FALSE
+NA %eq% NA            # TRUE
+1 %eq% NULL           # FALSE
+1 %eq% NA             # FALSE
+
+# Comparing of atomic values
+1 %eq% 1              # TRUE
+&quot;one&quot; %eq% &quot;one&quot;      # TRUE
+1 %eq% &quot;one&quot;          # FALSE
+1 %eq% Sys.Date()     # FALSE
+
+# Comparing of vectors
+v1 &lt;- c(&quot;A&quot;, &quot;B&quot;, &quot;C&quot;)
+v2 &lt;- c(&quot;A&quot;, &quot;B&quot;, &quot;D&quot;)
+v1 %eq% v1            # TRUE
+v1 %eq% v2            # FALSE
+
+# Comparing of data frames
+mtcars %eq% mtcars    # TRUE
+mtcars %eq% iris      # FALSE
+iris %eq% iris[1:50,] # FALSE
+
+# Mixing it up 
+mtcars %eq% NULL      # FALSE
+v1 %eq% NA            # FALSE
+1 %eq% v1             # FALSE</code></pre>
+</div>
+<div id="package-disclaimer" class="section level2">
+<h2>Package Disclaimer</h2>
+<p>Note that the <strong>libr</strong> package is intended to be used with small and medium-sized data sets. It is not recommended for big data, as big data requires very careful control over which data is or is not loaded into memory. The <strong>libr</strong> package, on the other hand, tends to load all data into memory indiscriminately.</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
