@@ -161,7 +161,7 @@ is.lib <- function(x) {
     ret <- TRUE
   else if (is.null(x1) | is.null(x2)) {
     ret <- FALSE
-  } else if (all(class(x1) != class(x2))) {
+  } else if (all(typeof(x1) != typeof(x2))) {
     ret <- FALSE
   } else if ("data.frame" %in% class(x1)) {
     
@@ -304,7 +304,7 @@ writeData <- function(x, ext, file_path, force = FALSE) {
     if (!cs_comp | force) {
       if (file.exists(file_path))
         file.remove(file_path)
-      write_csv(x, file_path)
+      write_csv(x, file_path, na = "")
       attr(x, "checksum") <- md5sum(file_path)
     }
     
@@ -331,7 +331,7 @@ writeData <- function(x, ext, file_path, force = FALSE) {
     if (!cs_comp | force) {
       if (file.exists(file_path))
         file.remove(file_path)
-      foreign::write.dbf(x, file_path)
+      foreign::write.dbf(as.data.frame(x), file_path)
       attr(x, "checksum") <- md5sum(file_path)
     }
     
@@ -531,6 +531,52 @@ exec_spec <- function(x, spcs, nm) {
  }
  
  return(ret)
+}
+
+
+
+dofilter <- function(str, vect, extension = NULL) {
+  
+  # Remove base path and file extension
+  if (is.null(extension))
+    lst <- vect
+  else 
+    lst <- gsub(paste0(".", extension), "", basename(vect))
+  
+  # Generate regular expressions
+  flt <-  paste0("^", gsub("*", ".*", str, fixed = TRUE), "$")
+  
+  # Create return list
+  ret <- c()
+  
+  # Perform filter 
+  for (f in flt) {
+    tmp <- vect[grepl(f, lst, ignore.case = TRUE, useBytes = TRUE)]
+    #tmp <- vect[grepl(f, lst)]
+    
+    # Add results to return vector
+    if (length(tmp) > 0) {
+      for (t in tmp)
+        ret[length(ret) + 1] <- t
+    }
+  }
+  
+  # Dedupe
+  ret <- unique(ret)
+  
+  return(ret)
+  
+}
+
+
+#' @noRd
+log_logr <- function(x) {
+  
+  if (length(find.package('logr', quiet=TRUE)) > 0) {
+    if (utils::packageVersion("logr") >= "1.2.0") {
+      logr::log_hook(x)
+    }
+  }
 }
 
 # get_id <- function(n = 1, seed_no = 1, id_len = 5){

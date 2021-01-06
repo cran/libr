@@ -1,10 +1,8 @@
 ---
-title: "Creates Data Libraries and Dictionaries"
-author: "David J. Bosak"
-date: "`r Sys.Date()`"
+title: "libr"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Creates Data Libraries and Dictionaries}
+  %\VignetteIndexEntry{libr}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -15,605 +13,325 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
-# libr <img src="../man/images/books.svg" align="right" height="138" />
   
 The **libr** package brings the concepts of data libraries, data 
-dictionaries, and data steps to R.  A data library is an object used to define 
-and manage an entire directory of data files.  A data dictionary is a data 
-frame full of information about a data library, data frame, or tibble. A
-data step is a mechanism to perform row-by-row processing of data.
+dictionaries, and data steps to R.  
 
+* A **data library** is an object used to define 
+and manage an entire directory of data files.  
+* A **data dictionary** is a data 
+frame full of information about a data library, data frame, or tibble. 
+* A **data step** is a mechanism to perform row-by-row processing of data.
 
-### Glossary 
-The functions contained in the **libr** package are as follows:
+These concepts have been available in SAS® software for decades. 
+But they have not been available in R ... until now!
 
-#### Library Functions
+The **libr** package also includes an enhanced equality operator to
+make data comparisons more intuitive.
+
+### Key Functions
+
+The above concepts are implemented in the **libr** package with four key 
+functions. They are:
+
 * `libname()`: Creates a data library
-* `lib_load()`: Loads a library into the workspace
-* `lib_unload()`: Unloads a library from the workspace
-* `lib_sync()`: Synchronizes the workspace with the library list
-* `lib_write()`: Writes library data to the file system
-* `lib_add()`: Adds data to a library
-* `lib_replace()`: Replaces data in a library
-* `lib_remove()`: Removes data from a library
-* `lib_copy()`: Copies a data library
-* `lib_delete()`: Deletes a data library
-* `lib_info()`: Returns a data frame of information about the library
-* `lib_path()`: Returns the path of a data library
-* `lib_size()`: Returns the size of the data library in bytes
-
-#### Import Specs Functions
-* `specs()`: Define import specs for a libname
-* `import_spec()`: Define an import spec for a specific file
-* `write.specs()`: Writes a specs object to the file system
-* `read.specs()`: Reads a specs file from the file system
-
-#### Other Functions
-* `dictionary()`: Creates a data dictionary
-* `datastep()`: Perform row-by-row processing of data
+* `dictionary()`: Creates a data dictionary 
+* `datastep()`: Performs row-by-row processing of data
 * `%eq%`: An infix operator to check equality between objects
 
+### How to Use
+Let's look at some simple examples of each of the four functions above.  These
+examples will be using some sample data.  The sample data is included
+in the **libr** package, and also available for download 
+[here](https://github.com/dbosak01/libr/blob/master/inst/extdata/libr_data.zip).
 
-## Libnames and Dictionaries
+#### The `libname()` Function
+The **libr** `libname()` function is quite similar to the SAS® `libname`
+statement.  The first parameter is the name of the library.  The 
+second parameter is a path to a directory the library will point to.  The 
+third parameter is the engine with which to read and write the data.  
+```{r eval=FALSE, echo=TRUE} 
+library(libr)
 
-The main motivation for developing the **libr** package is to create and use 
-data libraries and data dictionaries.  These concepts are useful when 
-dealing with sets of related data files.  The `libname()` function allows
-you to define a library for an entire directory of data files.  The library
-can then be manipulated as a whole using the `lib_*` functions in the **libr**
-package.
+# Get path to sample data
+pkg <- system.file("extdata", package = "libr")
 
-### Basic Library Operations
-There are four main **libr** functions for creating and using a data library:
+# Define data library
+libname(sdtm, pkg, "csv") 
 
-* `libname()`
-* `lib_load()`
-* `lib_unload()`
-* `lib_write()`
 
-The `libname()` function creates a data library.  The function has parameters
-for the library name and a directory to associate it with.  If the directory
-has existing data files, those data files will be automatically loaded
-into the library.  Once in the library, the data can be accessed using list
-syntax.
-
-You may create a data library for several different types of files: 'rds', 
-'csv', 'xlsx', 'xls', 'sas7bdat', 'xpt', and 'dbf'.  The type of library is
-defined using the `engine` parameter on the `libname()` function.  The default
-data engine is 'rds'.  The data engines will attempt to identify the correct
-data type for each column of data.  You may also control the data type of 
-the columns using the `import_specs` parameter and the `specs()` and 
-`import_spec()` functions.
-
-If you prefer to access the data via the workspace, call
-the `lib_load()` function on the library.  This function will load the 
-library data into the parent frame, where it can be accessed using a two-level
-(&lt;library&gt;.&lt;dataset&gt;) name.  
-
-When you are done with the data, call the `lib_unload()` function to remove
-the data from the parent frame and put it back in the library list.  To write
-any added or modified data to disk, call the `lib_write()` function. The 
-`lib_write()` function will only write data that has changed since the last
-write.
-
-The following example will illustrate some basic functionality of the 
-**libr** package regarding the creation of libnames and use of dictionaries.
-The example first places some sample data in a temp directory for
-illustration purposes.  Then the example creates a libname from the temp
-directory, loads it into memory, adds data to it, and then unloads and 
-writes everything to disk:
 ```
-# Create temp directory
-tmp <- tempdir()
 
-# Save some data to temp directory
-# for illustration purposes
-saveRDS(trees, file.path(tmp, "trees.rds"))
-saveRDS(rock, file.path(tmp, "rocks.rds"))
+The `libname()` function above will send two types of information to the console:
 
-# Create library
-libname(dat, tmp)
-# library 'dat': 2 items
-# - attributes: not loaded
-# - path: C:\Users\User\AppData\Local\Temp\RtmpCSJ6Gc
+* The column specifications for each data file imported
+* A summary print-out of the library 
+
+The summary print-out looks like this:
+```
+# library 'sdtm': 8 items
+- attributes: csv not loaded
+- path: C:/packages/libr/inst/extdata
+- items:
+  Name Extension Rows Cols     Size        LastModified
+1   AE       csv  150   27  88.1 Kb 2020-09-18 14:30:23
+2   DA       csv 3587   18 527.8 Kb 2020-09-18 14:30:23
+3   DM       csv   87   24  45.1 Kb 2020-09-18 14:30:23
+4   DS       csv  174    9  33.7 Kb 2020-09-18 14:30:23
+5   EX       csv   84   11    26 Kb 2020-09-18 14:30:23
+6   IE       csv    2   14    13 Kb 2020-09-18 14:30:23
+7   SV       csv  685   10  69.9 Kb 2020-09-18 14:30:24
+8   VS       csv 3358   17   467 Kb 2020-09-18 14:30:24
+
+```
+
+The summary displays what type of library it is, where it is located,
+and what data (if any) is already in the library directory.  In this case,
+there are eight 'csv' files available.
+
+For each of the eight files, the `libname()` function also displayed 
+the column specifications used to import the data file.  A column 
+specification looks like this:
+```
+$VS
+
+-- Column specification ------------------------------------------
+cols(
+  STUDYID = col_character(),
+  DOMAIN = col_character(),
+  USUBJID = col_character(),
+  VSSEQ = col_double(),
+  VSTESTCD = col_character(),
+  VSTEST = col_character(),
+  VSPOS = col_character(),
+  VSORRES = col_double(),
+  VSORRESU = col_character(),
+  VSSTRESC = col_double(),
+  VSSTRESN = col_double(),
+  VSSTRESU = col_character(),
+  VSBLFL = col_character(),
+  VISITNUM = col_double(),
+  VISIT = col_character(),
+  VSDTC = col_date(format = ""),
+  VSDY = col_double()
+)
+
+```
+
+The column specification shows how the data was imported.  Since 'csv'
+files do not contain well-defined data type information on each of the columns,
+the `libname` function has to guess at the data types.  The column
+specification shows you what the guesses were.  This is useful information.
+You should review these column specifications to see if the `libname` function
+guessed correctly.  If it did not guess correctly, you can control 
+the import data types by sending a `specs()` collection of `import_spec()`
+objects to the `import_specs` parameter on the `libname()` function.  See
+the `specs()` documentation for an example and additional details.
+
+#### The `lib_load()` Function
+Observe that there is difference between the SAS® `libname` statement and the 
+**libr** `libname()` function.  The difference is that after the 
+SAS® `libname` statement is called, the data is immediately available to
+your code using two-level (\<library\>.\<dataset\>) syntax.  
+
+With the **libr** function, on the other hand, the data is immediately 
+available using list syntax on the library variable name.  To get the 
+two-level syntax, you first have to call the `lib_load()` function.
+```{r eval=FALSE, echo=TRUE} 
+
+lib_load(sdtm)
+# # library 'sdtm': 8 items
+# - attributes: csv loaded
+# - path: C:/packages/libr/inst/extdata
 # - items:
-#    Name Extension Rows Cols   Size        LastModified
-# 1 rocks       rds   48    4 3.1 Kb 2020-11-05 23:25:34
-# 2 trees       rds   31    3 2.4 Kb 2020-11-05 23:25:34
-
-# Examine data dictionary for library
-dictionary(dat)
-# A tibble: 7 x 9
-#   Name  Column Class   Label Description Format Width  Rows   NAs
-#   <chr> <chr>  <chr>   <lgl> <lgl>       <lgl>  <lgl> <int> <int>
-# 1 rocks area   integer NA    NA          NA     NA       48     0
-# 2 rocks peri   numeric NA    NA          NA     NA       48     0
-# 3 rocks shape  numeric NA    NA          NA     NA       48     0
-# 4 rocks perm   numeric NA    NA          NA     NA       48     0
-# 5 trees Girth  numeric NA    NA          NA     NA       31     0
-# 6 trees Height numeric NA    NA          NA     NA       31     0
-# 7 trees Volume numeric NA    NA          NA     NA       31     0
-
-# Load library
-lib_load(dat)
-
-# Examine workspace
-ls()
-# [1] "dat" "dat.rocks" "dat.trees" "tmp"
-
-# Use data from the library
-summary(dat.rocks)
-#      area            peri            shape              perm        
-# Min.   : 1016   Min.   : 308.6   Min.   :0.09033   Min.   :   6.30  
-# 1st Qu.: 5305   1st Qu.:1414.9   1st Qu.:0.16226   1st Qu.:  76.45  
-# Median : 7487   Median :2536.2   Median :0.19886   Median : 130.50  
-# Mean   : 7188   Mean   :2682.2   Mean   :0.21811   Mean   : 415.45  
-# 3rd Qu.: 8870   3rd Qu.:3989.5   3rd Qu.:0.26267   3rd Qu.: 777.50  
-# Max.   :12212   Max.   :4864.2   Max.   :0.46413   Max.   :1300.00 
-
-# Add data to the library
-dat.trees_subset <- subset(dat.trees, Girth > 11)
-
-# Add more data to the library
-dat.cars <- mtcars
-
-# Unload the library from memory
-lib_unload(dat)
-
-# Examine workspace again
-ls()
-# [1] "dat" "tmp"
-
-# Write the library to disk
-lib_write(dat)
-# library 'dat': 4 items
-# - attributes: not loaded
-# - path: C:\Users\User\AppData\Local\Temp\RtmpCSJ6Gc
-# - items:
-#           Name Extension Rows Cols   Size        LastModified
-# 1        rocks       rds   48    4 3.1 Kb 2020-11-05 23:37:45
-# 2        trees       rds   31    3 2.4 Kb 2020-11-05 23:37:45
-# 3         cars       rds   32   11 7.3 Kb 2020-11-05 23:37:45
-# 4 trees_subset       rds   23    3 1.8 Kb 2020-11-05 23:37:45
-
-# Clean up
-lib_delete(dat)
-
-# Examine workspace again
-ls()
-# [1] "tmp"
-```
-
-### Manipulating Libraries
-The **libr** package also contains a number of functions for manipulating
-data libraries.  There are functions to add and remove data from a library,
-as well as copy or delete an entire library.
-
-The example below illustrates some of these additional functions.  The example
-first creates a library and adds some data to it.  The example then proceeds
-to copy it to another library and perform some manipulation of the data
-in the libraries.  The example ends by looking at some of the metadata 
-available for libraries:
-
-```
-# Create temp directory
-tmp <- tempdir()
-
-# Create libraries
-libname(s1, tmp)
-
-# Add data to library and adjust names
-lib_add(s1, state.name, state.area, state.region, state.abb,
-        name = c("name", "area", "region", "abb"))
-# # library 's1': 4 items
-# - attributes: rds not loaded
-# - path: C:\Users\User\AppData\Local\Temp\RtmpqAMV6L
-# - items:
-#     Name Extension Rows Cols   Size        LastModified
-# 1   name       rds   50    1 4.4 Kb 2020-11-29 17:00:28
-# 2   area       rds   50    1 1.4 Kb 2020-11-29 17:00:28
-# 3 region       rds   50    1 1.9 Kb 2020-11-29 17:00:28
-# 4    abb       rds   50    1 4.1 Kb 2020-11-29 17:00:28
-
-# Copy library to backup location
-lib_copy(s1, s2, file.path(tmp, "orig"))
-# # library 's2': 4 items
-# - attributes: rds not loaded
-# - path: C:\Users\User\AppData\Local\Temp\RtmpqAMV6L/orig
-# - items:
-#     Name Extension Rows Cols   Size        LastModified
-# 1   name       rds   50    1 4.4 Kb 2020-11-29 17:01:17
-# 2   area       rds   50    1 1.4 Kb 2020-11-29 17:01:17
-# 3 region       rds   50    1 1.9 Kb 2020-11-29 17:01:17
-# 4    abb       rds   50    1 4.1 Kb 2020-11-29 17:01:17
-
-# Remove data from library 1
-lib_remove(s1, name = c("name", "area", "region", "abb"))
-# # library 's1': 0 items
-# - attributes: rds not loaded
-# - path: C:\Users\User\AppData\Local\Temp\RtmpqAMV6L
-# NULL
-
-# Load library 1 into memory
-lib_load(s1)
-
-s1.combined <- data.frame(name = s2.name, abb = s2.abb, 
-                              area = s2.area, region = s2.region)
-
-s1.east <- subset(s1.combined, region == "Northeast")
-s1.west <- subset(s1.combined, region == "West")
-s1.north <- subset(s1.combined, region == "North Central")
-s1.south <- subset(s1.combined, region == "South")
-
-# Sync workspace with library list
-lib_sync(s1)
-# # library 's1': 5 items
-# - attributes: rds loaded
-# - path: C:\Users\User\AppData\Local\Temp\RtmpqAMV6L
-# - items:
-#       Name Extension Rows Cols    Size LastModified
-# 1 combined        NA   50    4 12.7 Kb         <NA>
-# 2     east        NA    9    4  3.2 Kb         <NA>
-# 3    north        NA   12    4  3.5 Kb         <NA>
-# 4    south        NA   16    4    4 Kb         <NA>
-# 5     west        NA   13    4  3.6 Kb         <NA>
-
-# Save library 1 to disk
-lib_write(s1)
-# # library 's1': 5 items
-# - attributes: rds loaded
-# - path: C:\Users\User\AppData\Local\Temp\RtmpqAMV6L
-# - items:
-#       Name Extension Rows Cols    Size        LastModified
-# 1 combined       rds   50    4 13.4 Kb 2020-11-29 17:03:40
-# 2     east       rds    9    4    4 Kb 2020-11-29 17:03:40
-# 3    north       rds   12    4  4.3 Kb 2020-11-29 17:03:40
-# 4    south       rds   16    4  4.8 Kb 2020-11-29 17:03:40
-# 5     west       rds   13    4  4.4 Kb 2020-11-29 17:03:40
-
-# View path
-lib_path(s1)
-# [1] "C:\\Users\\User\\AppData\\Local\\Temp\\RtmpqAMV6L"
-
-# View size
-lib_size(s1)
-# [1] 7175
-
-# View info
-lib_info(s1)
-#       Name Extension Rows Cols    Size        LastModified
-# 1 combined       rds   50    4 13.4 Kb 2020-11-29 17:03:40
-# 2     east       rds    9    4    4 Kb 2020-11-29 17:03:40
-# 3    north       rds   12    4  4.3 Kb 2020-11-29 17:03:40
-# 4    south       rds   16    4  4.8 Kb 2020-11-29 17:03:40
-# 5     west       rds   13    4  4.4 Kb 2020-11-29 17:03:40
-
-# Display dictionary
-dictionary(s1)
-# # A tibble: 20 x 10
-#    Name     Column Class     Label Description Format Width Justify  Rows   NAs
-#    <chr>    <chr>  <chr>     <chr> <chr>       <lgl>  <int> <chr>   <int> <int>
-#  1 combined name   character NA    NA          NA        14 NA         50     0
-#  2 combined abb    character NA    NA          NA         2 NA         50     0
-#  3 combined area   numeric   NA    NA          NA        NA NA         50     0
-#  4 combined region factor    NA    NA          NA        NA NA         50     0
-#  5 east     name   character NA    NA          NA        13 NA          9     0
-#  6 east     abb    character NA    NA          NA         2 NA          9     0
-#  7 east     area   numeric   NA    NA          NA        NA NA          9     0
-#  8 east     region factor    NA    NA          NA        NA NA          9     0
-#  9 north    name   character NA    NA          NA        12 NA         12     0
-# 10 north    abb    character NA    NA          NA         2 NA         12     0
-# 11 north    area   numeric   NA    NA          NA        NA NA         12     0
-# 12 north    region factor    NA    NA          NA        NA NA         12     0
-# 13 south    name   character NA    NA          NA        14 NA         16     0
-# 14 south    abb    character NA    NA          NA         2 NA         16     0
-# 15 south    area   numeric   NA    NA          NA        NA NA         16     0
-# 16 south    region factor    NA    NA          NA        NA NA         16     0
-# 17 west     name   character NA    NA          NA        10 NA         13     0
-# 18 west     abb    character NA    NA          NA         2 NA         13     0
-# 19 west     area   numeric   NA    NA          NA        NA NA         13     0
-# 20 west     region factor    NA    NA          NA        NA NA         13     0
-
-# Unload library 1
-lib_unload(s1)
-
-# Clean up
-lib_delete(s1)
-lib_delete(s2)
-```
-## The Datastep Function
-Normally, R processes data column-by-column. The data step allows you 
-to process data row-by-row.  Row-by-row processing of data is useful when you 
-have related columns, and wish to perform conditional logic on those 
-columns. The `datastep()` function allows you to realize this style of 
-data processing. It is particularly advantageous when you wish to perform deeply 
-nested conditional logic. It is also very useful for by-group
-processing.
-
-#### Example 1: Simple Data Step
-Here is an example of a simple data step:
-```
-# Add some columns to mtcars using data step logic
-df <- datastep(mtcars[1:10, 1:3], {
-
-    if (mpg >= 20) 
-      mpgcat <- "High"
-    else 
-      mpgcat <- "Low"
-      
-    recdt <- as.Date("1974-06-10")
-    
-    if (cyl == 8)
-      is8cyl <- TRUE
-
-  })
-  
-# View results  
-df
-#                    mpg cyl  disp      recdt mpgcat is8cyl
-# Mazda RX4         21.0   6 160.0 1974-06-10   High     NA
-# Mazda RX4 Wag     21.0   6 160.0 1974-06-10   High     NA
-# Datsun 710        22.8   4 108.0 1974-06-10   High     NA
-# Hornet 4 Drive    21.4   6 258.0 1974-06-10   High     NA
-# Hornet Sportabout 18.7   8 360.0 1974-06-10    Low   TRUE
-# Valiant           18.1   6 225.0 1974-06-10    Low     NA
-# Duster 360        14.3   8 360.0 1974-06-10    Low   TRUE
-# Merc 240D         24.4   4 146.7 1974-06-10   High     NA
-# Merc 230          22.8   4 140.8 1974-06-10   High     NA
-# Merc 280          19.2   6 167.6 1974-06-10    Low     NA
-
-```
-### Keep, Drop, and Rename 
-
-The data step has parameters to perform basic shaping of the resulting
-data frame.  These parameters are 'keep', 'drop', and 'rename'.  For example,
-the above data step could have been performed by sending all columns into 
-the data step, and keeping only the desired columns.  Using the `keep` 
-parameter also allows you to order the resulting columns.
-
-#### Example 2: Keeping Data Step Variables
-```
-# Keep and order output columns 
-df <- datastep(mtcars[1:10,], 
-  keep = c("mpg", "cyl", "disp", "mpgcat", "recdt"), {
-
-    if (mpg >= 20) 
-      mpgcat <- "High"
-    else 
-      mpgcat <- "Low"
-      
-    recdt <- as.Date("1974-06-10")
-    
-    if (cyl == 8)
-      is8cyl <- TRUE
-
-  })
-  
-df
-#                    mpg cyl  disp mpgcat      recdt
-# Mazda RX4         21.0   6 160.0   High 1974-06-10
-# Mazda RX4 Wag     21.0   6 160.0   High 1974-06-10
-# Datsun 710        22.8   4 108.0   High 1974-06-10
-# Hornet 4 Drive    21.4   6 258.0   High 1974-06-10
-# Hornet Sportabout 18.7   8 360.0    Low 1974-06-10
-# Valiant           18.1   6 225.0    Low 1974-06-10
-# Duster 360        14.3   8 360.0    Low 1974-06-10
-# Merc 240D         24.4   4 146.7   High 1974-06-10
-# Merc 230          22.8   4 140.8   High 1974-06-10
-# Merc 280          19.2   6 167.6    Low 1974-06-10
-
-```
-### The Retain Parameter
-
-The retain parameter allows you to define variables
-that will be seeded with the value from the previous step. The retain
-option is useful for creating cumulative values or for performing 
-conditions based on the value of the previous row.
-
-#### Example 3: Drop, Retain, and Rename Parameters
-```
-df <- datastep(mtcars[1:10, ],
-               drop = c("disp", "hp", "drat", "qsec",
-                        "vs", "am", "gear", "carb"),
-               retain = list(cumwt = 0 ),
-               rename = c(mpg = "MPG", cyl = "Cylinders", wt = "Wgt",
-                          cumwt = "Cumulative Wgt"), {
-
-  cumwt <- cumwt + wt
-
- })
-
-df
-#                    MPG Cylinders   Wgt Cumulative Wgt
-# Mazda RX4         21.0         6 2.620          2.620
-# Mazda RX4 Wag     21.0         6 2.875          5.495
-# Datsun 710        22.8         4 2.320          7.815
-# Hornet 4 Drive    21.4         6 3.215         11.030
-# Hornet Sportabout 18.7         8 3.440         14.470
-# Valiant           18.1         6 3.460         17.930
-# Duster 360        14.3         8 3.570         21.500
-# Merc 240D         24.4         4 3.190         24.690
-# Merc 230          22.8         4 3.150         27.840
-# Merc 280          19.2         6 3.440         31.280
-
-```
-### By Group Processing
-The `datastep()` function also has the capabilities of performing by-group
-processing.  A by-group is accomplished using the `by` parameter, and passing
-a vector of column names that define the group.  Once a by-group is 
-defined, the `first.` and `last.` automatic variables become active, which
-allow you to identify the boundaries between groups.  Note that, by default,
-your data must be sorted properly before sending it into the data step. To 
-turn the sort check off, set the `sort_check` parameter to FALSE.
-
-#### Example 4: By Groups
-```
-# Identify start and end of by-groups
-df <- datastep(mtcars[1:10,], 
-  keep = c("mpg", "cyl", "gear", "grp"), 
-  by = c("gear"), sort_check = FALSE, {
-
-    if (first. & last.)
-      grp <- "Start - End"
-    else if (first.)
-      grp <- "Start"
-    else if (last.)
-      grp <- "End"
-    else 
-      grp <- "-"
-
-  })
-  
-df
-#                    mpg cyl gear   grp
-# Mazda RX4         21.0   6    4 Start
-# Mazda RX4 Wag     21.0   6    4     -
-# Datsun 710        22.8   4    4   End
-# Hornet 4 Drive    21.4   6    3 Start
-# Hornet Sportabout 18.7   8    3     -
-# Valiant           18.1   6    3     -
-# Duster 360        14.3   8    3   End
-# Merc 240D         24.4   4    4 Start
-# Merc 230          22.8   4    4     -
-# Merc 280          19.2   6    4   End
-
-```
-### Using Summary Functions
-There may be times when you want to combine row-by-row conditional 
-processing with column-by-column vector operations.  For example, 
-let's say you want to calculate a mean and then perform conditional 
-processing on that mean.  This 
-situation can be handled using the `calculate` parameter on the `datastep()`
-function. The function will execute the `calculate` block first, add any
-assigned variables to the data frame, and then execute the data step.  Below 
-is an example of such a scenario:
-
-#### Example 5: Calculate Block
-```
-# Categorize mpg as above or below the mean
-df <- datastep(mtcars, 
-  keep = c("mpg", "cyl", "mean_mpg", "mpgcat"), 
-  calculate = { mean_mpg = mean(mpg) },
-  {
-
-    if (mpg >= mean_mpg)
-      mpgcat <- "High"
-    else 
-      mpgcat <- "Low"
-
-  })
-  
-df[1:10,]
-#                    mpg cyl mean_mpg mpgcat
-# Mazda RX4         21.0   6 20.09062   High
-# Mazda RX4 Wag     21.0   6 20.09062   High
-# Datsun 710        22.8   4 20.09062   High
-# Hornet 4 Drive    21.4   6 20.09062   High
-# Hornet Sportabout 18.7   8 20.09062    Low
-# Valiant           18.1   6 20.09062    Low
-# Duster 360        14.3   8 20.09062    Low
-# Merc 240D         24.4   4 20.09062   High
-# Merc 230          22.8   4 20.09062   High
-# Merc 280          19.2   6 20.09062    Low
-
-```
-### Data Steps with `dplyr`
-Note that the `datastep()` function is pipe-friendly, and can be combined
-with **dplyr** functions in a data pipeline.  Also note that the `datastep()`
-function will recognize any group attributes added by the `group_by()` 
-function.  Therefore, within a **dplyr** pipeline, it is not necessary to 
-use any `datastep` parameters.  The following example recreates the above 
-data frame from Example 5, but with a **dplyr** pipeline.
-
-#### Example 6: Data Pipeline
-```
-library(dplyr)
-library(magrittr)
-
-# Add datastep to dplyr pipeline
-df <- mtcars %>% 
-  select(mpg, cyl, gear) %>% 
-  mutate(mean_mpg = mean(mpg)) %>% 
-  datastep({
-
-    if (mpg >= mean_mpg)
-      mpgcat <- "High"
-    else 
-      mpgcat <- "Low"
-
-  }) %>% 
-  filter(row_number() <= 10)
-  
-df
-#     mpg cyl gear mean_mpg mpgcat
-# 1  21.0   6    4 20.09062   High
-# 2  21.0   6    4 20.09062   High
-# 3  22.8   4    4 20.09062   High
-# 4  21.4   6    3 20.09062   High
-# 5  18.7   8    3 20.09062    Low
-# 6  18.1   6    3 20.09062    Low
-# 7  14.3   8    3 20.09062    Low
-# 8  24.4   4    4 20.09062   High
-# 9  22.8   4    4 20.09062   High
-# 10 19.2   6    4 20.09062    Low
+#   Name Extension Rows Cols     Size        LastModified
+# 1   AE       csv  150   27  88.1 Kb 2020-09-18 14:30:23
+# 2   DA       csv 3587   18 527.8 Kb 2020-09-18 14:30:23
+# 3   DM       csv   87   24  45.1 Kb 2020-09-18 14:30:23
+# 4   DS       csv  174    9  33.7 Kb 2020-09-18 14:30:23
+# 5   EX       csv   84   11    26 Kb 2020-09-18 14:30:23
+# 6   IE       csv    2   14    13 Kb 2020-09-18 14:30:23
+# 7   SV       csv  685   10  69.9 Kb 2020-09-18 14:30:24
+# 8   VS       csv 3358   17   467 Kb 2020-09-18 14:30:24
 
 ```
 
+Notice on the console printout that the library is now "loaded".  That means
+the data has been loaded into the workspace, and is available using
+two-level syntax. If you are working in **RStudio**, the environment 
+pane will now show all the datasets available in the library.
 
-## Enhanced Equality Operator `%eq%`
-Lastly, the **libr** package contains an enhanced equality operator.  The 
-objective of the `%eq%` operator is to return a TRUE or FALSE value when
-any two objects are compared.  This enhanced equality operator is useful
-for situations when you don't want to check for NULL or NA values, or care
-about the data types of the objects you are comparing.
+<img src="../man/images/lib_load.png"/>
 
-The `%eq%` operator also compares data frames.  The comparison will include
-all data values, but no attributes.  This functionality is particularly useful
-when comparing tibbles, as tibbles often have many attributes assigned by 
-`dplyr` functions.
+At this point, you can work with your data very much the same way
+as you would in SAS®.  You can pass these datasets into statistical functions, 
+or manipulate them with **dplyr** functions. Note that you can also 
+work with individual variables on the datasets using dollar sign ("$") syntax.  
+```{r eval=FALSE, echo=TRUE} 
+# Get total number of records
+nrow(sdtm.DM)
+# [1] 87
 
-While it can be advantageous to have a comparison operator that does not give
-errors when encountering a NULL or NA value, note that this behavior can also 
-mask problems with your code.  Therefore, use the `%eq%` operator
-with care.
-
-Below is an example of several comparisons using the `%eq%` infix operator:
-
-```
-# Comparing of NULLs and NA
-NULL %eq% NULL        # TRUE
-NULL %eq% NA          # FALSE
-NA %eq% NA            # TRUE
-1 %eq% NULL           # FALSE
-1 %eq% NA             # FALSE
-
-# Comparing of atomic values
-1 %eq% 1              # TRUE
-"one" %eq% "one"      # TRUE
-1 %eq% "one"          # FALSE
-1 %eq% Sys.Date()     # FALSE
-
-# Comparing of vectors
-v1 <- c("A", "B", "C")
-v2 <- c("A", "B", "D")
-v1 %eq% v1            # TRUE
-v1 %eq% v2            # FALSE
-
-# Comparing of data frames
-mtcars %eq% mtcars    # TRUE
-mtcars %eq% iris      # FALSE
-iris %eq% iris[1:50,] # FALSE
-
-# Mixing it up 
-mtcars %eq% NULL      # FALSE
-v1 %eq% NA            # FALSE
-1 %eq% v1             # FALSE
+# Get frequency counts for each arm
+table(sdtm.DM$ARM)
+# ARM A          ARM B          ARM C          ARM D SCREEN FAILURE 
+# 20             21             21             23              2 
 ```
 
-## Package Disclaimer
-Note that the **libr** package is intended to be used with small and 
-medium-sized data sets.  It is not recommended for big data, as big data
-requires very careful control over which data is or is not loaded into memory.
-The **libr** package, on the other hand, tends to load all data into memory 
-indiscriminately.
+The datasets will be available in the workspace for the length of your session.
+If you wish to unload them from the workspace, call the `lib_unload()` 
+function.  See the `lib_load()` and `lib_unload()` documentation for 
+additional information on these functions.  
+
+To see more examples of the **libr** data management 
+functions, refer to the articles on [Basic Library Operations](libr-basics.html)
+and [Library Management](libr-management.html).
+
+#### The `dictionary()` Function
+Once you have a library defined, you may want to examine 
+the column attributes for the datasets in that library.
+Examining those column attributes can be accomplished with the `dictionary()` 
+function. The `dictionary()`
+function returns a tibble of information about the data in the library.
+
+Continuing from the example above, let's look at the dictionary for the 
+'sdtm' library created previously.
+```{r eval=FALSE, echo=TRUE}
+dictionary(sdtm)
+# # A tibble: 130 x 10
+#    Name  Column  Class     Label Description Format Width Justify  Rows   NAs
+#    <chr> <chr>   <chr>     <chr> <chr>       <lgl>  <int> <chr>   <int> <int>
+#  1 AE    STUDYID character NA    NA          NA         3 NA        150     0
+#  2 AE    DOMAIN  character NA    NA          NA         2 NA        150     0
+#  3 AE    USUBJID character NA    NA          NA        10 NA        150     0
+#  4 AE    AESEQ   numeric   NA    NA          NA        NA NA        150     0
+#  5 AE    AETERM  character NA    NA          NA        72 NA        150     0
+#  6 AE    AELLT   logical   NA    NA          NA        NA NA        150   150
+#  7 AE    AELLTCD logical   NA    NA          NA        NA NA        150   150
+#  8 AE    AEDECOD character NA    NA          NA        43 NA        150     0
+#  9 AE    AEPTCD  numeric   NA    NA          NA        NA NA        150     0
+# 10 AE    AEHLT   character NA    NA          NA        63 NA        150     0
+# # ... with 120 more rows
+
+```
+
+The resulting dictionary table shows the name of the dataset, the column name, 
+and some interesting attributes related to each column.  As you can see,
+the **libr** dictionary table is overall quite similar to a SAS® dictionary
+table.  See the `dictionary()` function documentation for more information.
+
+### The `datastep()` Function
+People with experience in SAS® software know that it is sometimes advantageous
+to process row-by-row.  In SAS®, row-by-row processing done with a 
+data step.  The data step is one of the most fundamental operations
+when working in SAS®.
+
+The **libr** package offers a `datastep()` function that simulates this style
+of row-by-row processing.  The function includes several of the most basic
+parameters available to the SAS® datastep: keep, drop, rename, retain, and by.
+Here is a simple example, again using the data from the library already 
+defined above:
+
+```{r eval=FALSE, echo=TRUE}
+age_groups <- datastep(sdtm.DM, 
+                       keep = c("USUBJID", "AGE", "AGEG"), { 
+                         
+                         if (AGE >= 18 & AGE <= 29)
+                           AGEG <- "18 to 29"
+                         else if (AGE >= 30 & AGE <= 44)
+                           AGEG <- "30 to 44"
+                         else if (AGE >= 45 & AGE <= 59)
+                           AGEG <- "45 to 59"
+                         else 
+                           AGEG <- "60+"
+                         
+                       })
+age_groups
+# # A tibble: 87 x 3
+#    USUBJID      AGE AGEG    
+#    <chr>      <dbl> <chr>   
+#  1 ABC-01-049    39 30 to 44
+#  2 ABC-01-050    47 45 to 59
+#  3 ABC-01-051    34 30 to 44
+#  4 ABC-01-052    45 45 to 59
+#  5 ABC-01-053    26 18 to 29
+#  6 ABC-01-054    44 30 to 44
+#  7 ABC-01-055    47 45 to 59
+#  8 ABC-01-056    31 30 to 44
+#  9 ABC-01-113    74 60+     
+# 10 ABC-01-114    72 60+     
+# # ... with 77 more rows
+```
+
+Notice that the `datastep()` function kept only those variables specified
+on the `keep` parameter.  The data step itself is passed within the 
+curly braces. You can put any number of conditional statements and assignments
+inside the curly braces, just like a SAS® data step. Also like a 
+SAS® data step, you do not need to 'declare' new variables.  Any name 
+not identified as an R function name is assumed to be a new variable,
+and will be created automatically on the input data.
+
+The datastep function also supports "first." and "last." functionality through
+use of the `by` parameter.  See additional examples on the `datastep()`
+help page and in the data step [article](libr-datastep.html).
+
+#### The \%eq\% Function
+In Base R, there are two comparison functions:  The double-equal (==) infix 
+operator, and the `identical()` function.  The weakness of the infix operator
+is that it will not test for NULL or NA values.  The weakness of the 
+`identical()` function is it will compare
+everything, including attributes assigned to the objects you are comparing. 
+If there is even a small difference in one of these attributes, the 
+`identical()` function will return FALSE.  This behavior is inconvenient, 
+especially when working with **dplyr** functions, as these functions
+assign many attributes to the datasets they are manipulating.
+
+The `%eq%` function contained in the **libr** packages attempts to provide
+a more intuitive comparison.  The `%eq%` is an infix operator that will
+test for NA and NULL values, and will ignore attributes in any data comparison.
+These qualities make it more suitable for the types of comparisons normally
+encountered when working with data.  The suitability of the `%eq%` operator
+can be illustrated by examining these methods side-by-side on the same
+input data.
+```{r eval=FALSE, echo=TRUE}
+# Set up input data
+v1 <- c(1, 2, 3)
+v2 <- c(1, 2, 3)
+attr(v2, "label") <- "My Label"
+v3 <- c(1, 2, NA)
+
+# Comparing "equal" vectors
+v1 == v2              # TRUE TRUE TRUE
+identical(v1, v2)     # FALSE
+v1 %eq% v2            # TRUE
+
+# Comparing "unequal" vectors
+v1 == v3              # TRUE TRUE NA
+identical(v1, v3)     # FALSE
+v1 %eq% v3            # FALSE
+
+```
+
+Note the different results returned by the three different comparison 
+functions. The `%eq%` operator is similar to the `identical()` function 
+in that it will always return a single TRUE or FALSE value.  The difference
+is that it ignored the "label" attribute assigned to vector *v2*, and only
+looked at the data values. Since it saw all the data values were equal,
+the `%eq%` operator returned TRUE, while the `identical()` function
+returned FALSE. 
+
+You can see some more examples of the `%eq%` operator in the help 
+documentation, or in the [Enhanced Equality](libr-eq.html) article.
+
+### Next Steps 
+
+For next steps, please review the examples provided in the vignette articles. 
+Those articles include:
+
+* [Basic Library Operations](libr-basics.html)
+* [Library Management](libr-management.html)
+* [Data Step Operations](libr-datastep.html)
+* [Enhanced Equality](libr-eq.html)
+
+
 

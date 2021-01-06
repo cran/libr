@@ -21,7 +21,7 @@ test_that("print() functions works as expected.", {
 })
 
 
-test_that("comp function work as expected.", {
+test_that("eq function work as expected.", {
   
   expect_equal(mtcars %eq% mtcars, TRUE)
   expect_equal(mtcars %eq% iris, FALSE)
@@ -39,6 +39,10 @@ test_that("comp function work as expected.", {
   expect_equal(v1 %eq% v2[1:5], FALSE)
   v2[5] <-2
   expect_equal(v1  %eq% v2, FALSE)
+  
+  v1 <- c(1, 2, NA, NA)
+  v2 <- c(NA, NA, 1, NA, 3)
+  expect_equal(v1 %eq% v2, FALSE)
   
 })
 
@@ -64,6 +68,67 @@ test_that("strong_eq function works as expected.", {
   v2 <- c(NA, NA, 1, NA)
   expect_equal(all(strong_eq(v1, v2)), FALSE)
   
+  
 })
 
+
+test_that("dofilter function works as expected for paths", {
+  
+  
+  v1 <- c("/temp/fork.csv", "/temp/four.csv", "/temp/spork.csv")
+  
+  expect_equal(dofilter("fo*", v1, "csv"), c("/temp/fork.csv", "/temp/four.csv"))
+  
+  expect_equal(dofilter("fork", v1, "csv"), c("/temp/fork.csv"))
+  
+  expect_equal(is.null(dofilter("or*", v1, "csv")), TRUE)
+  
+  expect_equal(dofilter("*or*", v1, "csv"), c("/temp/fork.csv","/temp/spork.csv"))
+  
+  expect_equal(dofilter(c("fo*", "sp*"), v1, "csv"), c("/temp/fork.csv", 
+                                                       "/temp/four.csv", 
+                                                       "/temp/spork.csv"))
+  
+  expect_equal(dofilter(c("Fo*", "SP*"), v1, "csv"), c("/temp/fork.csv",
+                                                       "/temp/four.csv",
+                                                       "/temp/spork.csv"))
+  
+})
+
+
+test_that("dofilter function works as expected for names", {
+  
+  
+  v2 <- c("fork", "four", "spork")
+  
+  expect_equal(dofilter("fo*", v2),  c("fork", "four"))
+  
+  expect_equal(dofilter("fork", v2),  c("fork"))
+  
+  expect_equal(is.null(dofilter("or*", v2)),  TRUE)
+  
+  expect_equal(dofilter("*or*", v2),  c("fork", "spork"))
+  
+  expect_equal(dofilter(c("fo*", "sp*"), v2),  c("fork", "four", "spork"))
+  
+  expect_equal(dofilter(c("fork", "spork"), v2),  c("fork", "spork"))
+  
+  expect_equal(dofilter(c("FORK", "Sp*"), v2),  c("fork", "spork"))
+  
+})
+
+test_that("copy_attributes function works as expected.", {
+  
+  d1 <- mtcars
+  d2 <- mtcars
+  
+  attr(d1$mpg, "label") <- "Here1"
+  attr(d1$disp, "label") <- "Here2"
+
+  d3 <- copy_attributes(d1, d2)
+
+  expect_equal(attr(d3$mpg, "label"), "Here1")
+  expect_equal(attr(d3$disp, "label"), "Here2")
+  
+})
 

@@ -241,7 +241,20 @@ datastep <- function(data, steps, keep = NULL,
                      by = NULL, calculate = NULL,
                      retain = NULL,
                      sort_check = TRUE) {
-
+  
+  if (!"data.frame" %in% class(data))
+    stop("input data must be inherited from data.frame")
+  
+  
+  if (!is.null(retain)) {
+    if (!"list" %in% class(retain))
+      stop("retain parameter value must be of class 'list'")
+    
+  }
+  
+  # Capture number of starting columns
+  startcols <- ncol(data)
+  
   # Put code in a variable for safe-keeping
   code <- substitute(steps, env = environment())
 
@@ -251,9 +264,11 @@ datastep <- function(data, steps, keep = NULL,
    data <- within(data, eval(agg), keepAttrs = TRUE)
   }
   
-  ret <- NULL
+  ret <- list()
   firstval <- NULL
-  firstvals <- NULL
+  firstvals <- list()
+  rowcount <- nrow(data)
+  orig_class <- class(data)
   
   # Set by if data is a grouped tibble
   if (is.null(by) && "grouped_df" %in% class(data)) {
@@ -262,31 +277,48 @@ datastep <- function(data, steps, keep = NULL,
       nms <- names(grpdf)
       if (!is.null(nms)) {
         nms <- nms[nms != ".rows"]
-        if (length(nms) > 0)
+        if (length(nms) > 0) {
           by <- nms
+          
+        }
       }
     }
   }
-
+  
+  data_attributes <- data[1, ]
+  
+  # For some reason the grouped tibble kills performance.
+  # Temporarily convert to a data frame.  
+  # Seriously like 20X performance increase.
+  data <- as.data.frame(data)
+  
+  # Increases performance
+  if (!is.null(by)) {
+    bydata <- as.data.frame(data[ , by])
+  }
+  
 
   # Step through row by row
-  for (n. in seq_len(nrow(data))) {
+  for (n. in seq_len(rowcount)) {
 
+    rw <- data[n., ]
+    byrw <- rw[1, by]
+    
     # Deal with first. and last.
     # These can be accessed from within the evaluated code,
     # which is really cool.
     if (!is.null(by)) {
       if (is.null(firstval)) {
-        firstval <- data[n., by]
+        firstval <- byrw
         if (length(names(firstval)) == 0)
           names(firstval) <- by
         first. <- TRUE
       } else {
 
         # Compare current by group to previous row
-        if (dfcomp(firstval, data[n., by]) == FALSE) {
+        if (dfcomp(firstval, byrw) == FALSE) {
           first. <- TRUE
-          firstval <- data[n., by]
+          firstval <- byrw
           if (length(names(firstval)) == 0)
             names(firstval) <- by
         } else {
@@ -295,12 +327,16 @@ datastep <- function(data, steps, keep = NULL,
       }
 
       # If it's the last row of the data frame, mark last.
-      if (n. == nrow(data)) {
+      if (n. == rowcount) {
         last. <- TRUE
       } else {
         
         # Compare by group to next row to determine last.
-        if (dfcomp(data[n. + 1, by],  data[n., by]) == FALSE) {
+        # print(bydata)
+         # print(n.)
+         # print(bydata[n. + 1, ])
+         # print(byrw)
+        if (dfcomp(bydata[n. + 1, ],  byrw) == FALSE) {
           last. <- TRUE
         } else {
           last. <- FALSE
@@ -319,20 +355,21 @@ datastep <- function(data, steps, keep = NULL,
         first. <- FALSE
 
       # If it's the last row
-      if (n. == nrow(data))
+      if (n. == rowcount)
         last. <- TRUE
       else
         last. <- FALSE
 
     }
   
+
     # Deal with retained variables
     if (!is.null(retain)) {
-      if (is.null(ret)) {
+      if (length(ret) == 0) {
         for (nm in names(retain)) {
           
           # Populate with initial value
-          data[n., nm] <- retain[[nm]]
+          rw[[nm]] <- retain[[nm]]
           
         }
         
@@ -340,36 +377,35 @@ datastep <- function(data, steps, keep = NULL,
         for (nm in names(retain)) {
        
           # Populate with value from previous row   
-          data[n., nm] <- ret[n. - 1, nm]
+          #data[n., nm] <- ret[n. - 1, nm]
+          
+          rw[[nm]] <- ret[[n. - 1]][[nm]]
           
         }
       }
     }
 
     # Evaluate the code for the row
-    r1 <- within(data[n., ], eval(code), keepAttrs = TRUE)
+    ret[[n.]]  <- within(rw, eval(code), keepAttrs = TRUE)
 
-    # Bind resulting row
-    if (is.null(ret))
-      ret <- r1
-    else
-      ret <- bind_rows(ret, r1)
+    
     
     # Keep track of the groups
     if (!is.null(by) & first. & sort_check) {
-      if (is.null(firstvals))
-        firstvals <- firstval
-      else {
-        firstvals <- bind_rows(firstvals, firstval) 
-      }
+        firstvals[[length(firstvals) + 1]] <- firstval
     }
   }
+  
+  # Bind all rows
+  ret <- bind_rows(ret, .id = "column_label")
+  ret["column_label"] <- NULL
 
   if (sort_check & !is.null(by)) {
-    if (!is.null(firstvals)) {
-      
-      ddat <- distinct(firstvals)
-      if (nrow(ddat) != nrow(firstvals)) {
+    if (length(firstvals) > 0) {
+      d <- bind_rows(firstvals, .id = "column_label")
+      d["column_label"] <- NULL
+      ddat <- distinct(d)
+      if (nrow(ddat) != nrow(d)) {
         stop(paste("Input data is not sorted according to the 'by' variable",
                    "parameter.\n  Either sort the input data properly or",
                    "set the sort_check parameter to FALSE."))
@@ -386,11 +422,40 @@ datastep <- function(data, steps, keep = NULL,
     ret <- ret[ , keep]
   }
 
+
+  # Convert back to tibble if original was a tibble
+  if ("tbl_df" %in% orig_class & !"tbl_df" %in% class(ret)) {
+    ret <- as_tibble(ret)
+  }
+  
+  # Put back grouping attributes if original data was grouped
+  if (!is.null(by) & "grouped_df" %in% orig_class) {
+    
+    if (all(by %in% names(ret)))
+      ret <- group_by(ret, across({{by}})) 
+    
+  }
+  
+  # Restore attributes from original data 
+  ret <- copy_attributes(data_attributes, ret)
+  
+  
   # Perform rename operation
   if (!is.null(rename)) {
     nms <- names(ret)
     names(ret) <- ifelse(nms %in% names(rename), rename, nms)
   }
+  
+  endcols <- ncol(ret)
+  if (startcols > endcols)
+    log_logr(paste0("datastep: columns increased from ", startcols, " to ", 
+                   endcols))
+  else if (startcols < endcols)
+    log_logr(paste0("datastep: columns decreased from ", startcols, " to ", 
+                   endcols))
+  else 
+    log_logr(paste0("datastep: columns started with ", startcols, 
+                   " and ended with ", endcols))
 
   return(ret)
 }
@@ -402,28 +467,50 @@ datastep <- function(data, steps, keep = NULL,
 #' @description A function to compare two by groups, passed as data frames
 #' @noRd
 dfcomp <- function(df1, df2) {
+  names(df1) <- NULL
+  names(df2) <- NULL
   ret <- FALSE
-  
-  if (is.null(df1) && is.null(df2))
+
+  if (all(is.null(df1)) && all(is.null(df2)))
     ret <- TRUE
-  else if (is.na(df1) && is.na(df2))
+  else if (all(is.na(df1)) && all(is.na(df2)))
     ret <- TRUE
-  else if (is.data.frame(df1) && is.data.frame(df2)) {
-    
+  if (all(is.data.frame(df1) && is.data.frame(df2))) {
+
     for (i in seq_along(df1)) {
-      if (df1[[i]] != df2[[i]])
+      if (any(df1[[i]] != df2[[i]]))
         return(FALSE)
     }
     ret <- TRUE
-    
-  } else if (class(df1) == class(df1)) {
-    
-    ret <- df1 == df2
-    
+
+  } else if (all(class(df1) == class(df1))) {
+
+    ret <- all(df1 == df2)
+
   }
   
   return(ret)
 }
 
 
+#' @noRd
+copy_attributes <- function(df1, df2) {
+  
+  ret <- df2
+  
+  for (nm in names(df2)) {
+    
+    attributes(ret[[nm]]) <- attributes(df1[[nm]])
+    
+    # col <- df1[[nm]]
+    # for (at in names(attributes(col))) {
+    #   
+    #   attr(ret[[nm]], at) <- attr(col, at)
+    #   
+    # }
+    
+  }
+  
+  return(ret)
+}
 

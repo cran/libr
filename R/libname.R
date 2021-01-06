@@ -115,6 +115,14 @@ e$env <- parent.frame()
 #' file format for interchange between software systems.  The DBASE file 
 #' format contains type information.}
 #' }
+#' @section File Filters:
+#' If you wish to import only a portion of your data files into a library, 
+#' you may accomplish it with the \code{filter} parameter.  The filter 
+#' parameter allows you to pass a vector of strings corresponding to the 
+#' names of the files you want to import.  The function allows a 
+#' wild-card (\*) for partial matching.  For example, \code{"te\*"} means any
+#' file name that that begins with a "te", and \code{"\*st"} means any file name
+#' that ends with an "st". 
 #' 
 #' @param name The unquoted name of the library to create.  The library name will 
 #' be created as a variable in the environment specified on the \code{env}
@@ -145,6 +153,11 @@ e$env <- parent.frame()
 #' The import specs should be named according to the file names in 
 #' the library directory. See the \code{\link{specs}} function for additional
 #' information.
+#' @param filter One or more quoted strings to use as filters for the incoming 
+#' file names. For more than one filter string, pass them as a vector of
+#' strings. The filter string can be a full or partial file name, without
+#' extension.  If using a partial file name, use a wild-card character (*) 
+#' to identify the missing portion. The match will be case-insensitive.
 #' @return The library object, with all data files loaded into the library
 #' list.  Items in the list will be named according the the file name,
 #' minus the file extension.
@@ -211,7 +224,7 @@ e$env <- parent.frame()
 #' @export
 libname <- function(name, directory_path, engine = "rds", 
                     read_only = FALSE, env = parent.frame(), 
-                    import_specs = NULL) {
+                    import_specs = NULL, filter = NULL) {
   if (is.null(engine))
     stop("engine parameter cannot be null")
   
@@ -252,6 +265,9 @@ libname <- function(name, directory_path, engine = "rds",
 
   # Get the file list according to the engine type
   lst <- list.files(directory_path, pattern = paste0("\\.", engine, "$"))
+  
+  if (!is.null(filter))
+    lst <- dofilter(filter, lst, engine)
   
   for (fl in lst) {
     fp <- file.path(directory_path, fl)
@@ -407,7 +423,8 @@ libname <- function(name, directory_path, engine = "rds",
   }
   
   assign(name_c, l, envir = e$env)
-
+  
+  log_logr(l)
   
   return(l)
   
@@ -425,6 +442,11 @@ libname <- function(name, directory_path, engine = "rds",
 #' will be loaded with <library>.<data set> syntax.  Loading the data frames
 #' into the environment makes them easy to access and use in your program.
 #' @param x The data library to load.
+#' @param filter One or more quoted strings to use as filters for the  
+#' data names to load into the workspace. For more than one filter string, 
+#' pass them as a vector of strings. The filter string can be a full or 
+#' partial name.  If using a partial name, use a wild-card character (*) 
+#' to identify the missing portion. The match will be case-insensitive.
 #' @return The loaded data library. 
 #' @seealso \code{\link{lib_unload}} to unload the library.
 #' @family lib
@@ -461,7 +483,7 @@ libname <- function(name, directory_path, engine = "rds",
 #' # Clean up
 #' lib_delete(dat)
 #' @export
-lib_load <- function(x) {
+lib_load <- function(x, filter = NULL) {
   
   if (all(class(x) != "lib"))
     stop("Object must be a data library.")
@@ -469,8 +491,13 @@ lib_load <- function(x) {
   # Get library name
   libnm <- deparse1(substitute(x, env = environment())) 
   
+  if (is.null(filter))
+    nms <- names(x)
+  else 
+    nms <- dofilter(filter, names(x))
+  
   # For each name in library, assign to global environment
-  for (nm in names(x)) {
+  for (nm in nms) {
     n <-  paste0(libnm, ".", nm)
     assign(n, x[[nm]], envir = e$env)
   }
@@ -480,6 +507,8 @@ lib_load <- function(x) {
   
   # Reassign with current attributes
   assign(libnm, x, envir = e$env)
+  
+  log_logr(paste0("lib_load: library '", libnm, "' loaded"))  
   
   return(x)
 }
@@ -567,6 +596,8 @@ lib_unload <- function(x, sync = TRUE, name = NULL) {
   
   # Reassign with updated attributes
   assign(libnm, x, envir = e$env)
+  
+  log_logr(paste0("lib_unload: library '", libnm, "' unloaded"))  
   
   return(x)
 }
@@ -673,6 +704,9 @@ lib_add <- function(x, ..., name = NULL) {
     
     # Reassign updated attributes
     assign(lbnm, x, envir = e$env)
+    
+    log_logr(paste0("lib_add: added data to library '", lbnm, "': ", 
+                    paste(nms, collapse = " "))) 
     
   } else {
     
@@ -790,6 +824,9 @@ lib_replace <- function(x, ...,  name = NULL) {
     # Update variable in environment
     assign(lbnm, x, envir = e$env)
     
+    log_logr(paste0("lib_replace: replaced data in library '", lbnm, "': ", 
+                    paste(nms, collapse = " ")))
+    
   } else {
     
     stop(paste0("Cannot replace in library '", lbnm, "' because it is read-only.")) 
@@ -874,6 +911,9 @@ lib_remove <- function(x, name) {
     
     # Update library
     assign(libnm, x, envir = e$env)
+    
+    log_logr(paste0("lib_remove: removed data from library '", libnm, "': ", 
+                    paste(name, collapse = " ")))
   
   } else {
     
@@ -993,6 +1033,9 @@ lib_write <- function(x, force = FALSE) {
     
     # Update the library variable
     assign(lbnm, x, envir = e$env)
+    
+    log_logr(paste0("lib_write: write data in library '", lbnm, "'"))
+    log_logr(x)
   
   } else {
     
@@ -1095,6 +1138,8 @@ lib_sync <- function(x, name = NULL) {
     
     # Update lib variable
     assign(libnm, x, envir = e$env)
+    
+    log_logr(paste0("lib_sync: synchronized data in library '", libnm, "'"))
     
   } else {
     
@@ -1204,6 +1249,9 @@ lib_copy <- function(x, nm, directory_path) {
   # Update environment
   assign(newlib, cpy, envir = e$env)
   
+  log_logr(paste0("lib_copy: copied data from library '", libnm, "' to '", newlib, "'"))
+  log_logr(cpy)
+  
   return(cpy)
 }
 
@@ -1285,6 +1333,8 @@ lib_delete <- function(x) {
     # Remove variables from environment
     if (lnm %in% ls(envir = e$env))
       rm(list = lnm, envir = e$env)
+    
+    log_logr(paste0("lib_delete: deleted library '", lnm, "'"))
   
   } else {
     
