@@ -1,3 +1,23 @@
+
+# libr 1.2.0
+
+* Made package compatible to R version 3.6.
+* Added GitHub actions to test previous versions of R.
+* Increased performance of datastep() function generally.  Benchmarks show
+about 40% improvement on average.
+* Added _standard_eval_ parameter to `libname()` and `lib_copy()` functions to
+allow user to pass library names as a variable.
+* Added _quiet_ parameter on `libname()` function to minimize console output
+if desired.
+* Added _arrays_ parameter and `dsarray()` class to handle data step arrays. 
+This functionality allows iteration across a list of variables inside a 
+`datastep()`.
+* Added _attributes_ parameter and `dsattr()` class to handle data step
+attributes.  This functionality allows the user to add attributes 
+to datastep variables.
+* Fixed bug in `datastep()` where it was stripping column attributes on Base R
+data frames.
+
 # libr 1.1.3
 
 * Fixed bug on datastep when data frame/tibble had a single column.
@@ -8,7 +28,7 @@
 * Integrated libr with logr.  All library functions will automatically
 provide logging entries if the autolog feature of the logr package is enabled.
 * Added pkgdown site.
-* Added filter parameters to `libname()` and `lib_load()` parameters. The
+* Added _filter_ parameters to `libname()` and `lib_load()` functions. The
 filter parameter allows the user to specify which data from the library
 they want loaded into memory.
 * Changed default "na" parameter on csv export to empty string instead of NA

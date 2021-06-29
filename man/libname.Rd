@@ -12,13 +12,18 @@ libname(
   read_only = FALSE,
   env = parent.frame(),
   import_specs = NULL,
-  filter = NULL
+  filter = NULL,
+  standard_eval = FALSE,
+  quiet = FALSE
 )
 }
 \arguments{
 \item{name}{The unquoted name of the library to create.  The library name will 
 be created as a variable in the environment specified on the \code{env}
-parameter.  The default environment is the parent frame.}
+parameter.  The default environment is the parent frame. If you want
+to pass the library name as a quoted string or a variable, 
+set the \code{standard_eval} parameter to TRUE to turn off the
+non-standard evaluation.}
 
 \item{directory_path}{A directory path to associate with the library.  If 
 the directory contains data files of the type specified on the 
@@ -56,6 +61,14 @@ file names. For more than one filter string, pass them as a vector of
 strings. The filter string can be a full or partial file name, without
 extension.  If using a partial file name, use a wild-card character (*) 
 to identify the missing portion. The match will be case-insensitive.}
+
+\item{standard_eval}{A TRUE or FALSE value which indicates whether to 
+use standard (quoted) or non-standard (unquoted) evaluation on the library
+\code{name} parameter. Use standard evaluation when you want to pass
+the library name with a variable.  Default is FALSE.}
+
+\item{quiet}{When TRUE, minimizes output to the console when loading 
+files.  Default is FALSE.}
 }
 \value{
 The library object, with all data files loaded into the library
@@ -103,23 +116,6 @@ import options on the \code{libname} function.  If your data does not
 follow standard conventions, it is recommended that you import your 
 data using a package that gives you more control over import options.
 }
-\section{Import Specifications}{
-
-In most cases, it is not necessary to specify the data types for incoming
-columns in your data.  Either the file format will preserve the appropriate
-data type information, or the assigned engine will guess correctly.  
-
-However, in some cases it will be necessary to control the column data types.
-For these cases, use the  
-\code{import_specs} parameter.  The \code{import_specs} parameter allows you
-to specify the data types by data set and column name. All the data type
-specifications are contained within a \code{specs} collection, and the 
-specifications for a particular data set are defined by an 
-\code{import_spec} function. See the \code{\link{specs}} and 
-\code{\link{import_spec}} documentation for further information
-and examples of defining an import spec.
-}
-
 \section{Data Engines}{
 
 The \code{libname} function currently provides seven different engines for 
@@ -180,9 +176,26 @@ If you wish to import only a portion of your data files into a library,
 you may accomplish it with the \code{filter} parameter.  The filter 
 parameter allows you to pass a vector of strings corresponding to the 
 names of the files you want to import.  The function allows a 
-wild-card (\*) for partial matching.  For example, \code{"te\*"} means any
-file name that that begins with a "te", and \code{"\*st"} means any file name
+wild-card (*) for partial matching.  For example, \code{"te*"} means any
+file name that that begins with a "te", and \code{"*st"} means any file name
 that ends with an "st".
+}
+
+\section{Import Specifications}{
+
+In most cases, it is not necessary to specify the data types for incoming
+columns in your data.  Either the file format will preserve the appropriate
+data type information, or the assigned engine will guess correctly.  
+
+However, in some cases it will be necessary to control the column data types.
+For these cases, use the  
+\code{import_specs} parameter.  The \code{import_specs} parameter allows you
+to specify the data types by data set and column name. All the data type
+specifications are contained within a \code{specs} collection, and the 
+specifications for a particular data set are defined by an 
+\code{import_spec} function. See the \code{\link{specs}} and 
+\code{\link{import_spec}} documentation for further information
+and examples of defining an import spec.
 }
 
 \examples{
@@ -241,7 +254,8 @@ lib_delete(dat)
 }
 \seealso{
 \code{\link{specs}} to define import specifications, 
-and \code{\link{dictionary}} to view the data dictionary for a library.
+\code{\link{dictionary}} to view the data dictionary for a library,
+and \code{\link{datastep}} to perform a data step.
 
 Other lib: 
 \code{\link{is.lib}()},

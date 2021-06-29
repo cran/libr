@@ -4,7 +4,6 @@ base_path <- "c:\\packages\\libr\\tests\\testthat\\data"
 
 base_path <- "./data"
 
-DEV <- FALSE
 
 test_that("datastep() function works as expected with mtcars.", {
 
@@ -18,7 +17,8 @@ test_that("datastep() function works as expected with mtcars.", {
 
   })
 
-
+  d1
+  
   expect_equal("mpgcat" %in% names(d1), TRUE)
 
 })
@@ -42,6 +42,8 @@ test_that("datastep() function works as expected with demo_studya.", {
       sexc <- "Other"
 
   })
+  
+  d1
 
   expect_equal("sexc" %in% names(d1), TRUE)
 
@@ -65,6 +67,8 @@ test_that("datastep() keep parameter works as expected.", {
       sexc <- "Other"
 
   })
+  
+  d1
 
   expect_equal(names(d1), c("usubjid", "sexc", "race"))
 
@@ -87,6 +91,8 @@ test_that("datastep() drop parameter works as expected.", {
       sexc <- "Other"
 
   })
+  
+  d1
 
   expect_equal(names(d1), c("study", "inv", "patient", "race",
                             "dob", "treatment", "sexc", "usubjid"))
@@ -265,35 +271,21 @@ test_that("datastep() retain class check works as expected", {
 
 })
 
-test_that("datastep() performance is good", {
-
-  if (DEV) {
-
-    libname(dat, file.path(base_path, "SDTM"), "sas7bdat")
-
-    tm <- Sys.time()
-
-    res <- datastep(dat$lb, retain = list(rnum = 0),
-                    by = c("USUBJID"),
-                    {
-      if (first.)
-        subjstart <- TRUE
-      else
-        subjstart <- FALSE
-
-      rnum <- rnum + 1
-
-    })
-
-    tmdiff <- Sys.time() - tm
-    tmdiff
-
-    expect_equal(tmdiff < 16, TRUE)
-
-  } else
-    expect_equal(TRUE, TRUE)
-
+test_that("datastep() array class check works as expected", {
+  
+  
+  expect_error(datastep(mtcars, array = c(fork = 0), {fork <- fork + 1}))
+  
 })
+
+
+test_that("datastep() attrib class check works as expected", {
+  
+  
+  expect_error(datastep(mtcars, attrib = c(fork = 0), {fork <- fork + 1}))
+  
+})
+
 
 
 test_that("Rename works as expected", {
@@ -310,68 +302,13 @@ test_that("Rename works as expected", {
 
   df
 
-  expect_equal("TRUE", "TRUE")
+  expect_equal("MPG" %in% names(df), TRUE)
+  expect_equal("Cylinders" %in% names(df), TRUE)
+  expect_equal("Wgt" %in% names(df), TRUE)
+  expect_equal("Cumulative Wgt" %in% names(df), TRUE)
 
 })
 
-
-test_that("datastep() with group_by performance is good", {
-  
-  if (DEV) {
-    
-    library(dplyr)
-    
-    scs <- specs(PE = import_spec(PESTAT = "character"))
-    
-    libname(dat, file.path(base_path, "SDTM"), "csv", import_specs = scs)
-    
-    tm <- Sys.time()
-    
-    prep <- dat$DM %>% 
-      left_join(dat$VS, by = c("USUBJID" = "USUBJID")) %>% 
-      select(USUBJID, VSTESTCD, VISIT, VISITNUM, VSSTRESN, ARM, VSBLFL) %>% 
-      filter(VSTESTCD %in% c("PULSE", "RESP", "TEMP", "DIABP", "SYSBP"), 
-             !(VISIT == "SCREENING" & VSBLFL != "Y")) %>% 
-      arrange(USUBJID, VSTESTCD, VISITNUM) %>% 
-      group_by(USUBJID, VSTESTCD) %>%
-      #datastep(by = c("USUBJID", "VSTESTCD"), retain = list(BSTRESN = 0), {
-      datastep(retain = list(BSTRESN = 0), {
-
-        # Combine treatment groups
-        # And distingish baseline time points
-        if (ARM == "ARM A") {
-
-          if (VSBLFL %eq% "Y") {
-            GRP <- "A_BASE"
-          } else {
-            GRP <- "A_TRT"
-          }
-
-        } else {
-
-          if (VSBLFL %eq% "Y") {
-            GRP <- "O_BASE"
-          } else {
-            GRP <- "O_TRT"
-          }
-
-        }
-
-        # Populate baseline value
-        if (first.)
-          BSTRESN = VSSTRESN
-
-      })
-    
-    tmdiff <- Sys.time() - tm 
-    tmdiff
-    
-    expect_equal(tmdiff < 20, TRUE)
-    
-  } else 
-    expect_equal(TRUE, TRUE)
-  
-})
 
 
 
@@ -381,6 +318,8 @@ test_that("datastep() attributes on data are maintained.", {
 
   
   libname(dat, file.path(base_path, "SDTM"), "sas7bdat")
+  
+  attributes(dat$dm$USUBJID)
   
   prep <- dat$dm %>% 
     left_join(dat$vs, by = c("USUBJID" = "USUBJID")) %>% 
@@ -435,7 +374,11 @@ test_that("datastep retains class attributes.", {
     csum <- 1
   })
   
+  df2
+  
+  expect_equal(class(df2$s1), "integer")
   expect_equal(class(df2$dt2), "Date")
+  expect_equal(class(df2$csum), "numeric")
 
 })
 
@@ -452,6 +395,8 @@ test_that("datastep works on single column data frame.", {
       status <- "Low"
     
   })
+  
+  df2
   
   expect_equal(ncol(df2), 2)
   expect_equal(nrow(df2), 10)
@@ -475,9 +420,110 @@ test_that("datastep works on single column tibble.", {
     
   })
   
+  df2
+  
   expect_equal(ncol(df2), 2)
   expect_equal(nrow(df2), 10)
   expect_equal(class(df2), c("tbl_df", "tbl", "data.frame"))
   
   
 })
+
+
+test_that("datastep() attributes on data are maintained on base dataframe.", {
+  
+  
+  dat <- mtcars
+  
+  attr(dat$mpg, "label") <- "Miles Per Gallon"
+  
+  
+  dat2 <- datastep(dat, {
+    fork <- "Hello" 
+  })
+
+  dat2
+  
+  expect_equal(attr(dat2$mpg, "label"), "Miles Per Gallon")  
+  
+})
+  
+  
+
+test_that("datastep works on tibble.", {
+  
+
+    
+    library(tibble)
+    
+    l <- 1000
+    
+    df <- tibble(C1 = seq_len(l), C2 = runif(l), 
+                 C3 = runif(l), C4 = runif(l))
+    
+    
+    res <- datastep(df, attrib = list(C5 = 0, C6 = 0),
+                    {
+                      C5 <- C2 + C3 + C4
+                      C6 <- max(C2, C3, C4)
+                      
+                    })
+    
+    res
+    
+    expect_equal("C5" %in% names(res), TRUE)
+    expect_equal("C6" %in% names(res), TRUE)
+    expect_equal(nrow(res), 1000)
+    
+  
+})
+
+
+
+test_that("datastep works on data.table", {
+  
+  
+  
+  library(data.table)
+  
+  l <- 1000
+  
+  df <- data.table(C1 = seq_len(l), C2 = runif(l), 
+               C3 = runif(l), C4 = runif(l))
+  
+  
+  res <- datastep(df, attrib = list(C5 = 0, C6 = 0),
+                  {
+                    C5 <- C2 + C3 + C4
+                    C6 <- max(C2, C3, C4)
+                    
+                  })
+  
+  res
+  
+  expect_equal("C5" %in% names(res), TRUE)
+  expect_equal("C6" %in% names(res), TRUE)
+  expect_equal(nrow(res), 1000)
+  
+  
+})
+
+
+
+test_that("datastep() works on a dataframe with a factor.", {
+  
+  
+  dat <- iris
+  
+  
+  dat2 <- datastep(dat, {
+    fork <- Petal.Length + Petal.Width 
+  })
+  
+  dat2
+  
+  expect_equal("fork" %in% names(dat2), TRUE)  
+  expect_equal(class(dat2$Species), "factor")
+  
+})
+  

@@ -49,21 +49,6 @@ e$env <- parent.frame()
 #' follow standard conventions, it is recommended that you import your 
 #' data using a package that gives you more control over import options. 
 #' 
-#' @section Import Specifications:
-#' In most cases, it is not necessary to specify the data types for incoming
-#' columns in your data.  Either the file format will preserve the appropriate
-#' data type information, or the assigned engine will guess correctly.  
-#' 
-#' However, in some cases it will be necessary to control the column data types.
-#' For these cases, use the  
-#' \code{import_specs} parameter.  The \code{import_specs} parameter allows you
-#' to specify the data types by data set and column name. All the data type
-#' specifications are contained within a \code{specs} collection, and the 
-#' specifications for a particular data set are defined by an 
-#' \code{import_spec} function. See the \code{\link{specs}} and 
-#' \code{\link{import_spec}} documentation for further information
-#' and examples of defining an import spec.
-#' 
 #' @section Data Engines:
 #' The \code{libname} function currently provides seven different engines for 
 #' seven different types of data files.
@@ -115,18 +100,37 @@ e$env <- parent.frame()
 #' file format for interchange between software systems.  The DBASE file 
 #' format contains type information.}
 #' }
+#' 
 #' @section File Filters:
 #' If you wish to import only a portion of your data files into a library, 
 #' you may accomplish it with the \code{filter} parameter.  The filter 
 #' parameter allows you to pass a vector of strings corresponding to the 
 #' names of the files you want to import.  The function allows a 
-#' wild-card (\*) for partial matching.  For example, \code{"te\*"} means any
-#' file name that that begins with a "te", and \code{"\*st"} means any file name
+#' wild-card (*) for partial matching.  For example, \code{"te*"} means any
+#' file name that that begins with a "te", and \code{"*st"} means any file name
 #' that ends with an "st". 
+#' 
+#' @section Import Specifications:
+#' In most cases, it is not necessary to specify the data types for incoming
+#' columns in your data.  Either the file format will preserve the appropriate
+#' data type information, or the assigned engine will guess correctly.  
+#' 
+#' However, in some cases it will be necessary to control the column data types.
+#' For these cases, use the  
+#' \code{import_specs} parameter.  The \code{import_specs} parameter allows you
+#' to specify the data types by data set and column name. All the data type
+#' specifications are contained within a \code{specs} collection, and the 
+#' specifications for a particular data set are defined by an 
+#' \code{import_spec} function. See the \code{\link{specs}} and 
+#' \code{\link{import_spec}} documentation for further information
+#' and examples of defining an import spec.
 #' 
 #' @param name The unquoted name of the library to create.  The library name will 
 #' be created as a variable in the environment specified on the \code{env}
-#' parameter.  The default environment is the parent frame.
+#' parameter.  The default environment is the parent frame. If you want
+#' to pass the library name as a quoted string or a variable, 
+#' set the \code{standard_eval} parameter to TRUE to turn off the
+#' non-standard evaluation.
 #' @param directory_path A directory path to associate with the library.  If 
 #' the directory contains data files of the type specified on the 
 #' \code{engine} parameter, they will be imported into the library list.  If
@@ -158,12 +162,19 @@ e$env <- parent.frame()
 #' strings. The filter string can be a full or partial file name, without
 #' extension.  If using a partial file name, use a wild-card character (*) 
 #' to identify the missing portion. The match will be case-insensitive.
+#' @param standard_eval A TRUE or FALSE value which indicates whether to 
+#' use standard (quoted) or non-standard (unquoted) evaluation on the library
+#' \code{name} parameter. Use standard evaluation when you want to pass
+#' the library name with a variable.  Default is FALSE.
+#' @param quiet When TRUE, minimizes output to the console when loading 
+#' files.  Default is FALSE.
 #' @return The library object, with all data files loaded into the library
 #' list.  Items in the list will be named according the the file name,
 #' minus the file extension.
 #' @family lib
 #' @seealso \code{\link{specs}} to define import specifications, 
-#' and \code{\link{dictionary}} to view the data dictionary for a library.
+#' \code{\link{dictionary}} to view the data dictionary for a library,
+#' and \code{\link{datastep}} to perform a data step.
 #' @examples 
 #' # Create temp directory
 #' tmp <- tempdir()
@@ -224,7 +235,8 @@ e$env <- parent.frame()
 #' @export
 libname <- function(name, directory_path, engine = "rds", 
                     read_only = FALSE, env = parent.frame(), 
-                    import_specs = NULL, filter = NULL) {
+                    import_specs = NULL, filter = NULL, standard_eval = FALSE,
+                    quiet = FALSE) {
   if (is.null(engine))
     stop("engine parameter cannot be null")
   
@@ -248,8 +260,11 @@ libname <- function(name, directory_path, engine = "rds",
     dir.create(directory_path, showWarnings = FALSE)
   
   # Get safe library name 
-  name_c <- deparse1(substitute(name, env = environment()))
-  
+  if (standard_eval)
+    name_c <- name
+  else 
+    name_c <- paste(deparse(substitute(name, env = environment())), collapse = "")
+
 
   # Create new structure of class "lib"
   l <- structure(list(), class = c("lib", "list"))
@@ -281,13 +296,19 @@ libname <- function(name, directory_path, engine = "rds",
       if (ext == "csv") {
         message(paste0("$", nm))
         
-        if (is.null(import_specs))
-          dat <- read_csv(fp)
-        else {
-
-          if (is.null(import_specs$specs[[nm]]))
+        if (is.null(import_specs)) {
+          if (quiet)
+            dat <- read_csv(fp, col_types = cols())
+          else 
             dat <- read_csv(fp)
-          else {
+        } else {
+
+          if (is.null(import_specs$specs[[nm]])) {
+            if (quiet) 
+              dat <- read_csv(fp, col_types = cols())
+            else
+              dat <- read_csv(fp)
+          } else {
             spcs <- get_colspec_csv(import_specs$specs[[nm]]$col_types)
            # print(spcs)
             na <- import_specs$specs[[nm]]$na
@@ -431,6 +452,8 @@ libname <- function(name, directory_path, engine = "rds",
 }
 
 
+
+
 # Manipulation Functions --------------------------------------------------
 
 
@@ -441,7 +464,7 @@ libname <- function(name, directory_path, engine = "rds",
 #' When the \code{lib_load} function is called, the data frames/tibbles 
 #' will be loaded with <library>.<data set> syntax.  Loading the data frames
 #' into the environment makes them easy to access and use in your program.
-#' @param x The data library to load.
+#' @param x The data library to load.  
 #' @param filter One or more quoted strings to use as filters for the  
 #' data names to load into the workspace. For more than one filter string, 
 #' pass them as a vector of strings. The filter string can be a full or 
@@ -485,11 +508,17 @@ libname <- function(name, directory_path, engine = "rds",
 #' @export
 lib_load <- function(x, filter = NULL) {
   
+  # Get library name
+  if (all(class(x) == "character")) {
+    libnm <- x
+    x <- get(x, envir = e$env)
+  } else {
+    libnm <- paste(deparse(substitute(x, env = environment())), collapse = "")
+  }
+  
   if (all(class(x) != "lib"))
     stop("Object must be a data library.")
   
-  # Get library name
-  libnm <- deparse1(substitute(x, env = environment())) 
   
   if (is.null(filter))
     nms <- names(x)
@@ -521,7 +550,7 @@ lib_load <- function(x, filter = NULL) {
 #' memory.  By default, the \code{lib_unload} function will also synchronize the 
 #' data in working memory with the data stored in the library list, as these
 #' two instances can become out of sync if you change the data in working memory.
-#' @param x The data library to unload.
+#' @param x The data library to unload. 
 #' @param sync Whether to sync the workspace with the library list before
 #' it is unloaded.  Default is TRUE. If you want to unload the workspace 
 #' without saving the workspace data, set this parameter to FALSE.
@@ -563,16 +592,23 @@ lib_load <- function(x, filter = NULL) {
 #' @export
 lib_unload <- function(x, sync = TRUE, name = NULL) {
 
+
+  if (all(class(x) == "character")) {
+    libnm <- x
+    x <- get(x, envir = e$env)
+    
+  } else {
+    # Get name of library
+    libnm <- paste(deparse(substitute(x, env = environment())), collapse = "") 
+  }
+  
   if (all(class(x) != "lib"))
     stop("Object must be a data library.")
   
   if (!is.null(name)) {
-   if (!"character" %in% class(name))
-     stop("Name must be of class character")
+    if (!"character" %in% class(name))
+      stop("Name must be of class character")
   }
-  
-  # Get name of library
-  libnm <- deparse1(substitute(x, env = environment())) 
   
   # Use override name if requested
   if (!is.null(name))
@@ -611,7 +647,7 @@ lib_unload <- function(x, sync = TRUE, name = NULL) {
 #' in the file format associated with the library engine. 
 #' If the library is loaded, the function will also 
 #' add the data to the workspace environment.   
-#' @param x The library to add data to.
+#' @param x The library to add data to.  
 #' @param ... The data frame(s) to add to the library.  If more than one,
 #' separate with commas.
 #' @param name The reference name to use for the data.  By default,
@@ -646,10 +682,18 @@ lib_unload <- function(x, sync = TRUE, name = NULL) {
 #' @export
 lib_add <- function(x, ..., name = NULL) {
   
+  if (all(class(x) == "character")) {
+    lbnm <- x
+    x <- get(x, envir = e$env)
+    
+  } else {
+    
+    lbnm  <- paste(deparse(substitute(x, env = environment())), collapse = "")
+  }
+  
   if (all(class(x) != "lib"))
     stop("Object must be a data library.")
-  
-  lbnm  <- deparse1(substitute(x, env = environment()))
+
   
   if (attr(x, "read_only") == FALSE) {
     
@@ -726,7 +770,7 @@ lib_add <- function(x, ..., name = NULL) {
 #' and immediately write the new data to the library
 #' directory location.  The data will be written in the file format
 #' associated with the library engine. 
-#' @param x The library to replace data in.
+#' @param x The library to replace data in.  
 #' @param ... The data frame(s) to replace.  If you wish to replace more than
 #' one data set, separate with commas.
 #' @param name The reference name to use for the data.  By default,
@@ -764,11 +808,19 @@ lib_add <- function(x, ..., name = NULL) {
 #' @export
 lib_replace <- function(x, ...,  name = NULL) {
   
+  if (all(class(x) == "character")) {
+    lbnm <- x
+    x <- get(x, envir = e$env)
+    
+  } else {
+    
+    # Get safe variable name
+    lbnm  <- paste(deparse(substitute(x, env = environment())), collapse = "")
+  }
+  
   if (all(class(x) != "lib"))
     stop("Object must be a data library.")
-  
-  # Get safe variable name
-  lbnm  <- deparse1(substitute(x, env = environment()))
+
   
   if (attr(x, "read_only") == FALSE) {
     
@@ -841,7 +893,7 @@ lib_replace <- function(x, ...,  name = NULL) {
 #' @description The \code{lib_remove} function removes an item from the 
 #' data library, and deletes the source file for that data.  If the library
 #' is loaded, it will also remove that item from the workspace environment.
-#' @param x The data library.
+#' @param x The data library. 
 #' @param name The quoted name of the item to remove from the data library. 
 #' For more than one name, pass a vector of quoted names.
 #' @return The library with the requested item removed.
@@ -878,11 +930,19 @@ lib_replace <- function(x, ...,  name = NULL) {
 #' @export
 lib_remove <- function(x, name) {
   
+  if (all(class(x) == "character")) {
+    
+    libnm <- x
+    x <- get(x, envir = e$env)
+    
+  } else {
+    
+    # Get safe names
+    libnm <- paste(deparse(substitute(x, env = environment())), collapse = "") 
+  }
   if (all(class(x) != "lib"))
     stop("Object must be a data library.")
-  
-  # Get safe names
-  libnm <- deparse1(substitute(x, env = environment()))
+
   
   # Get file path
   libpth <- attr(x, "path")
@@ -939,7 +999,7 @@ lib_remove <- function(x, name) {
 #' behavior, use the \code{force} option to force \code{lib_write} to write
 #' every data file to disk.
 #' 
-#' @param x The data library to write.
+#' @param x The data library to write. 
 #' @param force Force writing each data file to disk, even if it has not 
 #' changed.
 #' @return The saved data library.
@@ -990,11 +1050,19 @@ lib_remove <- function(x, name) {
 #' @export
 lib_write <- function(x, force = FALSE) {
   
+  if (all(class(x) == "character")) {
+    lbnm <- x
+    x <- get(x, envir = e$env)
+    
+  } else {
+    # Get safe name
+    lbnm <- paste(deparse(substitute(x, env = environment())), collapse = "") 
+  }
+  
   if (all(class(x) != "lib"))
     stop("Object must be a data library.")
   
-  # Get safe name
-  lbnm <- deparse1(substitute(x, env = environment()))
+
   
   if (attr(x, "read_only") != TRUE) { 
   
@@ -1103,14 +1171,22 @@ lib_write <- function(x, force = FALSE) {
 #' @export
 lib_sync <- function(x, name = NULL) {
   
-  if (all(class(x) != "lib"))
-    stop("Object must be a data library.")
-  
   # Use name if requested
   if (!is.null(name))
     libnm <- name
-  else 
-    libnm <- deparse1(substitute(x, env = environment()))
+  else {
+    if (all(class(x) == "character")) {
+      libnm <- x
+      x <- get(x, envir = e$env)
+    } else {
+      libnm <- paste(deparse(substitute(x, env = environment())), collapse = "")
+    }
+    
+  }
+  
+  if (all(class(x) != "lib"))
+    stop("Object must be a data library.")
+  
   
   if (is.loaded.lib(libnm) == TRUE) {
     
@@ -1161,8 +1237,15 @@ lib_sync <- function(x, name = NULL) {
 #' destination directory.  If the library is loaded into the workspace, 
 #' the workspace version will be considered the most current version, and
 #' that is the version that will be copied.  
-#' @param x The library to copy.
+#' @param x The library to copy.  
 #' @param nm The unquoted variable name to hold the new library.
+#' The parameter will assume non-standard
+#' (unquoted) evaluation unless the \code{standard_eval} parameter is set
+#' to TRUE.
+#' @param standard_eval A TRUE or FALSE value which indicates whether to 
+#' use standard (quoted) or non-standard (unquoted) evaluation on the 
+#' \code{nm} parameter. Default is FALSE.  Use this parameter if you want to 
+#' pass the target library name in a variable.
 #' @param directory_path The path to copy the library to.
 #' @return The new library.
 #' @family lib
@@ -1190,7 +1273,16 @@ lib_sync <- function(x, name = NULL) {
 #' lib_delete(dat1)
 #' lib_delete(dat2)
 #' @export
-lib_copy <- function(x, nm, directory_path) {
+lib_copy <- function(x, nm, directory_path, standard_eval = FALSE) {
+  
+  if (all(class(x) == "character")) {
+    libnm <- x
+    x <- get(libnm, envir = e$env)
+  } else {
+    
+    # Get safe lib name
+    libnm <- paste(deparse(substitute(x, env = environment())), collapse = "") 
+  }
   
   if (all(class(x) != "lib"))
     stop("Object must be a data library.")
@@ -1198,9 +1290,7 @@ lib_copy <- function(x, nm, directory_path) {
   # Create target directory if it doesn't exist
   if (!dir.exists(directory_path))
     dir.create(directory_path)
-  
-  # Get safe lib name
-  libnm <- deparse1(substitute(x, env = environment()))
+
 
   # Sync with list if needed
   if (attr(x, "loaded") == TRUE) {
@@ -1208,8 +1298,12 @@ lib_copy <- function(x, nm, directory_path) {
     x <- lib_sync(x, name = libnm) 
   }
   
-  # Get safe name of new library
-  newlib <- deparse1(substitute(nm, env = environment()))
+  if (standard_eval) {
+    newlib <- nm
+  } else {
+    # Get safe name of new library
+    newlib <- paste(deparse(substitute(nm, env = environment())), collapse = "")
+  }
   
   # Copy lib
   cpy <- x
@@ -1267,7 +1361,7 @@ lib_copy <- function(x, nm, directory_path) {
 #' The directory that contains the data will also
 #' not be affected by the delete operation.  To delete the data directory, 
 #' use the \code{\link[base]{unlink}} function or other packaged functions.
-#' @param x The data library to delete.
+#' @param x The data library to delete. 
 #' @family lib
 #' @examples 
 #' # Create temp directory
@@ -1306,11 +1400,19 @@ lib_copy <- function(x, nm, directory_path) {
 #' @export
 lib_delete <- function(x) {
   
+  if (all(class(x) == "character")) {
+    lnm <- x
+    x <- get(lnm, envir = e$env)
+  } else {
+    # Get safe name
+    lnm <- paste(deparse(substitute(x, env = environment())), collapse = "") 
+    
+  }
+  
   if (all(class(x) != "lib"))
     stop("Object must be a data library.")
   
-  # Get safe name
-  lnm <- deparse1(substitute(x, env = environment()))
+
   
   if (attr(x, "read_only") == FALSE) {
   
@@ -1347,7 +1449,7 @@ lib_delete <- function(x) {
 #' @title Get the Path for a Data Library
 #' @description The \code{lib_path} function returns the current path of the 
 #' the library as a string.
-#' @param x The data library.
+#' @param x The data library. 
 #' @return The path of the data library as a single string.
 #' @family lib
 #' @examples 
@@ -1366,6 +1468,11 @@ lib_delete <- function(x) {
 #' @export
 lib_path <- function(x) {
   
+  if (all(class(x) == "character")) {
+    libnm <- x
+    x <- get(libnm, envir = e$env)
+  }
+  
   if (all(class(x) != "lib"))
     stop("Object must be a data library.")
   
@@ -1378,7 +1485,7 @@ lib_path <- function(x) {
 #' @title Get the Size of a Data Library
 #' @description The \code{lib_size} function returns the number of bytes used
 #' by the data library, as stored on disk.  
-#' @param x The data library.
+#' @param x The data library. 
 #' @return The size of the data library in bytes as stored on the file system.
 #' @family lib
 #' @examples 
@@ -1400,6 +1507,11 @@ lib_path <- function(x) {
 #' lib_delete(dat)
 #' @export
 lib_size <- function(x) {
+  
+  if (all(class(x) == "character")) {
+    libnm <- x
+    x <- get(libnm, envir = e$env)
+  }
   
   if (all(class(x) != "lib"))
     stop("Object must be a data library.")
@@ -1427,7 +1539,7 @@ lib_size <- function(x) {
 #' about each item in the data library.  That information includes the item
 #' name, file extension, number of rows, number of columns, size in bytes, 
 #' and the last modified date.
-#' @param x The data library.
+#' @param x The data library. 
 #' @return A data frame of information about the library.
 #' @family lib
 #' @examples 
@@ -1454,6 +1566,12 @@ lib_size <- function(x) {
 #' lib_delete(dat)
 #' @export
 lib_info <- function(x) {
+  
+  if (all(class(x) == "character")) {
+    libnm <- x
+    x <- get(libnm, envir = e$env) 
+  }
+  
   
   if (all(class(x) != "lib"))
     stop("Object must be a data library.")

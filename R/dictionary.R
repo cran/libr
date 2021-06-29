@@ -23,10 +23,9 @@
 #' }
 #' @import tibble
 #' @seealso \code{\link{libname}} to create a data library.  Also 
-#' see the \code{\link[fmtr]{fmtr}} package for functions to set the
-#' \code{\link[fmtr]{formats}}, \code{\link[fmtr]{descriptions}}, 
-#' \code{\link[fmtr]{widths}}, and \code{\link[fmtr]{justification}} 
-#' attributes on a data frame.
+#' see the \code{\link{dsattr}} function to set attributes for your 
+#' dataset from within a \code{\link{datastep}}.  To render attributes, 
+#' see the \code{\link[fmtr]{fmtr}} package.
 #' @examples 
 #' # Create temp directory
 #' tmp <- tempdir()
@@ -58,6 +57,18 @@
 #' @export
 dictionary <- function(x) {
   
+
+  
+  if (all(class(x) == "character")) {
+    lbnm <- x
+    x <- get(lbnm, envir = e$env)
+    
+  } else {
+    
+    # Get safe variable name
+    lbnm  <- paste(deparse(substitute(x, env = environment())), collapse = "")
+  }
+  
   if (!any(class(x) == "lib") & !any(class(x) == "data.frame"))
     stop("Input object must be a library or data frame.")
    
@@ -78,9 +89,8 @@ dictionary <- function(x) {
     
   } else {
     
-    nm <- deparse1(substitute(x, env = environment()))
-    ret = getDictionary(x, nm)
-  
+    ret <- getDictionary(x, lbnm)
+    
   }
   
   ret <- as_tibble(ret)
