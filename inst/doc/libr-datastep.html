@@ -413,40 +413,41 @@ iterate over the list inside a data step. Data step arrays are defined with the 
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create AirPassengers Data Frame</span></span>
 <span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">t</span>(<span class="fu">matrix</span>(AirPassengers, <span class="dv">12</span>,</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">dimnames =</span> <span class="fu">list</span>(month.abb, <span class="fu">seq</span>(<span class="dv">1949</span>, <span class="dv">1960</span>)))))</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Use datastep array to get year tot, mean, and top month</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">datastep</span>(df,</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>                <span class="at">arrays =</span> <span class="fu">list</span>(<span class="at">months =</span> <span class="fu">dsarray</span>(<span class="fu">names</span>(df))),</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>                <span class="at">attrib =</span> <span class="fu">list</span>(<span class="at">Tot =</span> <span class="dv">0</span>, <span class="at">Mean =</span> <span class="dv">0</span>, <span class="at">Top =</span> <span class="st">&quot;&quot;</span>),</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>                <span class="at">drop =</span> <span class="st">&quot;mth&quot;</span>,</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>                {</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>                  Tot <span class="ot">&lt;-</span> <span class="fu">sum</span>(months[])</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>                  Mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(months[])</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>                  <span class="cf">for</span> (mth <span class="cf">in</span> months) {</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">if</span> (months[mth] <span class="sc">==</span> <span class="fu">max</span>(months[])) {</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>                      Top <span class="ot">&lt;-</span> mth</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>                    }</span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>                  }</span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>                })</span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">dimnames =</span> <span class="fu">list</span>(month.abb, <span class="fu">seq</span>(<span class="dv">1949</span>, <span class="dv">1960</span>)))), </span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Use datastep array to get year tot, mean, and top month</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">datastep</span>(df,</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>                <span class="at">arrays =</span> <span class="fu">list</span>(<span class="at">months =</span> <span class="fu">dsarray</span>(<span class="fu">names</span>(df))),</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>                <span class="at">attrib =</span> <span class="fu">list</span>(<span class="at">Tot =</span> <span class="dv">0</span>, <span class="at">Mean =</span> <span class="dv">0</span>, <span class="at">Top =</span> <span class="st">&quot;&quot;</span>),</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>                <span class="at">drop =</span> <span class="st">&quot;mth&quot;</span>,</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>                {</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>                  Tot <span class="ot">&lt;-</span> <span class="fu">sum</span>(months[])</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>                  Mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(months[])</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>                  <span class="cf">for</span> (mth <span class="cf">in</span> months) {</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">if</span> (months[mth] <span class="sc">==</span> <span class="fu">max</span>(months[])) {</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>                      Top <span class="ot">&lt;-</span> mth</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>                    }</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>                  }</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>                })</span>
 <span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>dat</span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co">#      Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec  Tot     Mean Top</span></span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="co"># 1949 112 118 132 129 121 135 148 148 136 119 104 118 1520 126.6667 Aug</span></span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="co"># 1950 115 126 141 135 125 149 170 170 158 133 114 140 1676 139.6667 Aug</span></span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="co"># 1951 145 150 178 163 172 178 199 199 184 162 146 166 2042 170.1667 Aug</span></span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="co"># 1952 171 180 193 181 183 218 230 242 209 191 172 194 2364 197.0000 Aug</span></span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="co"># 1953 196 196 236 235 229 243 264 272 237 211 180 201 2700 225.0000 Aug</span></span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="co"># 1954 204 188 235 227 234 264 302 293 259 229 203 229 2867 238.9167 Jul</span></span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="co"># 1955 242 233 267 269 270 315 364 347 312 274 237 278 3408 284.0000 Jul</span></span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="co"># 1956 284 277 317 313 318 374 413 405 355 306 271 306 3939 328.2500 Jul</span></span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="co"># 1957 315 301 356 348 355 422 465 467 404 347 305 336 4421 368.4167 Aug</span></span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="co"># 1958 340 318 362 348 363 435 491 505 404 359 310 337 4572 381.0000 Aug</span></span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="co"># 1959 360 342 406 396 420 472 548 559 463 407 362 405 5140 428.3333 Aug</span></span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="co"># 1960 417 391 419 461 472 535 622 606 508 461 390 432 5714 476.1667 Jul</span></span></code></pre></div>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>dat</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="co">#      Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec  Tot     Mean Top</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="co"># 1949 112 118 132 129 121 135 148 148 136 119 104 118 1520 126.6667 Aug</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a><span class="co"># 1950 115 126 141 135 125 149 170 170 158 133 114 140 1676 139.6667 Aug</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="co"># 1951 145 150 178 163 172 178 199 199 184 162 146 166 2042 170.1667 Aug</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="co"># 1952 171 180 193 181 183 218 230 242 209 191 172 194 2364 197.0000 Aug</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="co"># 1953 196 196 236 235 229 243 264 272 237 211 180 201 2700 225.0000 Aug</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="co"># 1954 204 188 235 227 234 264 302 293 259 229 203 229 2867 238.9167 Jul</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="co"># 1955 242 233 267 269 270 315 364 347 312 274 237 278 3408 284.0000 Jul</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="co"># 1956 284 277 317 313 318 374 413 405 355 306 271 306 3939 328.2500 Jul</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="co"># 1957 315 301 356 348 355 422 465 467 404 347 305 336 4421 368.4167 Aug</span></span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="co"># 1958 340 318 362 348 363 435 491 505 404 359 310 337 4572 381.0000 Aug</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="co"># 1959 360 342 406 396 420 472 548 559 463 407 362 405 5140 428.3333 Aug</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="co"># 1960 417 391 419 461 472 535 622 606 508 461 390 432 5714 476.1667 Jul</span></span></code></pre></div>
 <p>Next: <a href="libr-eq.html">Enhanced Equality</a></p>
 </div>
 </div>

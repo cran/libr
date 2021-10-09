@@ -1,4 +1,4 @@
-context("Utilities Tests")
+context("Specs Tests")
 
 base_path <- "c:\\packages\\libr\\tests\\testthat\\data"
 
@@ -35,6 +35,13 @@ test_that("specs() function works as expected.", {
   expect_equal(spcs$specs$AB$trim_ws, FALSE)
   expect_equal(spcs$specs$AB$col_types[[1]], "character")
   expect_equal(spcs$specs$AC$col_types[[1]], "numeric")
+  
+  s1 <- capture.output(print(spcs))
+  expect_equal(length(s1) > 0, TRUE)
+  
+  s2 <- capture.output(print(spcs, verbose = TRUE))
+  expect_equal(length(s1) > 0, TRUE)
+  
 })
 
 
@@ -70,6 +77,8 @@ test_that("write_specs() and read_specs() functions works as expected.", {
   spcs3 <- read.specs(tmp)
   expect_equal(length(spcs3$specs), 2)
   
+  expect_error(write.specs("fork"))
+  expect_error(read.specs("fork"))
   
   if (fe)
     unlink(pth2)
@@ -209,7 +218,8 @@ test_that("import_specs works as expected with dates.", {
   tmp <- file.path(tempdir(), "mtcars.csv")
 
   # Create data for illustration purposes
-  df <- data.frame(vehicle = rownames(mtcars), mtcars[c("mpg", "cyl", "disp")])
+  df <- data.frame(vehicle = rownames(mtcars), mtcars[c("mpg", "cyl", "disp")], 
+                   stringsAsFactors = FALSE)
 
   # Kill rownames
   rownames(df) <- NULL
@@ -248,6 +258,7 @@ test_that("import_specs works as expected with dates.", {
   # View data types
   dictionary(dat)
   
+  expect_equal(class(dat$mtcars$recdt), "Date")
   
 })
 

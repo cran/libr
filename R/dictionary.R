@@ -16,7 +16,9 @@
 #'   \item{\strong{Label:} The value of the label attribute.}
 #'   \item{\strong{Description:} A description applied to this column.}
 #'   \item{\strong{Format:} The value of the format attribute.}
-#'   \item{\strong{Width:} The max character width of the data in this column.}
+#'   \item{\strong{Width:} The value of the width attribute if any have been
+#'   assigned.  If no width attributes have been assigned, 
+#'   the max character width.}
 #'   \item{\strong{Justify:} The justification or alignment attribute value.}
 #'   \item{\strong{Rows:} The number of data rows.}
 #'   \item{\strong{NAs:} The number of NA values in this column.}
@@ -25,7 +27,7 @@
 #' @seealso \code{\link{libname}} to create a data library.  Also 
 #' see the \code{\link{dsattr}} function to set attributes for your 
 #' dataset from within a \code{\link{datastep}}.  To render attributes, 
-#' see the \code{\link[fmtr]{fmtr}} package.
+#' see the \strong{fmtr} package.
 #' @examples 
 #' # Create temp directory
 #' tmp <- tempdir()
@@ -107,12 +109,30 @@ getDictionary <- function(x, dsnm) {
   
   ret <- NULL
   rw <- NULL
+  usr_wdth <- c()
+  str_wdth <- c()
+  cntr <- 0
+  
   for (nm in names(x)) {
+    
+    cntr <- cntr + 1
     
     lbl <- attr(x[[nm]], "label")
     desc <- attr(x[[nm]], "description")
-    fmt <- attr(x[[nm]], "format")
+    fmt <- paste(as.character(attr(x[[nm]], "format")), collapse = "\n")
     jst <- attr(x[[nm]], "justify")
+    wdth <- attr(x[[nm]], "width")
+    
+    if (fmt == "")
+      fmt <- NA
+    
+    if (is.null(wdth)) {
+      str_wdth[cntr] <- ifelse(typeof(x[[nm]]) == "character", 
+             max(nchar(x[[nm]])),
+             NA) 
+    } else {
+      usr_wdth[cntr] <- wdth 
+    }
     
     rw <- data.frame(Name = dsnm,
                      Column = nm,
@@ -120,9 +140,7 @@ getDictionary <- function(x, dsnm) {
                      Label = ifelse(!is.null(lbl), lbl, as.character(NA)),
                      Description = ifelse(!is.null(desc), desc, as.character(NA)),
                      Format = ifelse(!is.null(fmt), fmt, NA),
-                     Width = ifelse(typeof(x[[nm]]) == "character", 
-                                    max(nchar(x[[nm]])),
-                                    NA),
+                     Width = ifelse(!is.null(wdth), wdth, NA),
                      Justify = ifelse(!is.null(jst), jst, as.character(NA)),
                      Rows = nrow(x),
                      NAs = sum(is.na(x[[nm]])))
@@ -134,6 +152,9 @@ getDictionary <- function(x, dsnm) {
       ret <- rbind(ret, rw)
     
   }
+  
+  if (length(usr_wdth) == 0)
+    ret[["Width"]] <- str_wdth
   
   return(ret)
   

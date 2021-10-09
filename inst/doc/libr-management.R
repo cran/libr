@@ -49,7 +49,8 @@ knitr::opts_chunk$set(
 #  lib_load(s1)
 #  
 #  s1.combined <- data.frame(name = s2.name, abb = s2.abb,
-#                                area = s2.area, region = s2.region)
+#                            area = s2.area, region = s2.region,
+#                            stringsAsFactors = FALSE)
 #  
 #  s1.east <- subset(s1.combined, region == "Northeast")
 #  s1.west <- subset(s1.combined, region == "West")

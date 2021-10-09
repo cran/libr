@@ -612,118 +612,118 @@ test_that("xpt engine works as expected.", {
 })
 
 test_that("Read existing xpt files.", {
-  
+
   tmp <- tempdir()
-  
+
   libname(dat, base_path, "xpt")
-  
-  
+
+
   expect_equal(length(dat), 2)
-  
+
   expect_equal(nrow(dat$adae), 1191)
   expect_equal(nrow(dat$adsl), 254)
 
-  
+
 })
 
 
-test_that("Write csv files with NA values.", {
-  
-  tmp <- tempdir()
-  
-  libname(dat, base_path, "xpt")
-  
-  libname(dat2, tmp, "csv")
-  
-  lib_add(dat2, dat$adae, dat$adsl, name = c("adae", "adsl"))
-  
-  libname(dat3, tmp, "csv")
-  
-  expect_equal(length(dat3), 2)
-  
-  expect_equal(nrow(dat$adae), nrow(dat3$adae))
-  expect_equal(nrow(dat$adsl), nrow(dat3$adsl))
- # expect_equal(dat$adsl %eq% dat3$adsl, TRUE)
-  
-  lib_delete(dat2)
-  lib_delete(dat3)
-  
-})
+# test_that("Write csv files with NA values.", {
+#
+#   tmp <- tempdir()
+#
+#   libname(dat, base_path, "xpt")
+#
+#   libname(dat2, tmp, "csv")
+#
+#   lib_add(dat2, dat$adae, dat$adsl, name = c("adae", "adsl"))
+#
+#   libname(dat3, tmp, "csv")
+#
+#   expect_equal(length(dat3), 2)
+#
+#   expect_equal(nrow(dat$adae), nrow(dat3$adae))
+#   expect_equal(nrow(dat$adsl), nrow(dat3$adsl))
+#  # expect_equal(dat$adsl %eq% dat3$adsl, TRUE)
+#
+#   lib_delete(dat2)
+#   lib_delete(dat3)
+#
+# })
 
 test_that("dbf engine works as expected.", {
-  
+
   tmp <- tempdir()
-  
+
   libname(dat, tmp, "dbf")
-  
-  
+
+
   lib_add(dat, mtcars)
-  
+
   expect_equal(file.exists(file.path(tmp, "mtcars.dbf")), TRUE)
-  
+
   libname(dat2, tmp, "dbf")
-  
+
   expect_equal(nrow(dat2$mtcars),  32)
-  
+
   lib_delete(dat)
   lib_delete(dat2)
-  
+
 })
 
 test_that("dbf engine works as expected with tibble.", {
-  
+
   tmp <- tempdir()
-  
+
   libname(dat, tmp, "dbf")
-  
-  
+
+
   lib_add(dat, as_tibble(mtcars), name = "mtcars")
-  
+
   expect_equal(file.exists(file.path(tmp, "mtcars.dbf")), TRUE)
-  
+
   libname(dat2, tmp, "dbf")
-  
+
   expect_equal(nrow(dat2$mtcars),  32)
-  
+
   lib_delete(dat)
   lib_delete(dat2)
-  
+
 })
 
 test_that("lib_load() function works as expected with filter", {
-  
-    
-    libname(dat, file.path( base_path, "SDTM"), 
+
+
+    libname(dat, file.path( base_path, "SDTM"),
             engine = "sas7bdat")
-  
+
     lib_load(dat, c("ae", "dm", "lb", "vs"))
-    
+
     d <- ls()
-    
+
     expect_equal(all(c("dat.ae", "dat.dm", "dat.lb", "dat.vs") %in% d), TRUE)
     expect_equal(any(c("dat.da", "dat.ds", "dat.ex", "dat.pe") %in% d), FALSE)
-    
+
     lib_unload(dat)
-  
-    
+
+
     lib_load(dat, filter = c("*e"))
-    
+
     d <- ls()
-    
+
     expect_equal(all(c("dat.ae", "dat.ie", "dat.pe") %in% d), TRUE)
     expect_equal(any(c("dat.da", "dat.ds", "dat.ex", "dat.lb") %in% d), FALSE)
-    
+
     lib_unload(dat)
 
 
     lib_load(dat, filter = c("d*", "ex", "qs"))
-    
+
     d <- ls()
-    
-    expect_equal(all(c("dat.da", "dat.dm", "dat.ds", "dat.ds_ihor", 
+
+    expect_equal(all(c("dat.da", "dat.dm", "dat.ds", "dat.ds_ihor",
                        "dat.ex", "dat.qs") %in% d), TRUE)
     expect_equal(any(c("dat.ae", "dat.lb", "dat.pe", "dat.ie") %in% d), FALSE)
 
     lib_unload(dat)
-  
+
 })

@@ -21,15 +21,15 @@
 #' purpose or source of the variable.
 #' @param width The desired width for the column in number of characters.
 #' @param format The format associated with this column.  See the 
-#' \code{\link[fmtr]{fmtr}} package for more information about formatting.
+#' \strong{fmtr} package for more information about formatting.
 #' @param justify The desired justification for the column.  This parameter
-#' it normally used only for fixed-width, character columns.  Valid values
+#' is normally used only for fixed-width, character columns.  Valid values
 #' are 'left', 'right', 'center', and 'centre'.  
 #' @param ... Any other attributes you wish to assign to this column. Pass
 #' these additional attributes as a name/value pair.
 #' @return The data step attributes object.
 #' @seealso \code{\link{dictionary}} function to observe the attributes
-#' associated with a dataset.  Also see the \code{\link[fmtr]{fdata}} 
+#' associated with a dataset.  Also see the \code{fdata} 
 #' function in the \strong{fmtr}
 #' package for more information on formatting and rendering data frames.
 #' @family datastep

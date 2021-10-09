@@ -4,10 +4,11 @@ base_path <- "c:\\packages\\libr\\tests\\testthat\\data"
 
 base_path <- "./data"
 
+dev <- FALSE
 
 test_that("getDictionary() function works as expected.", {
   
-  crs <- data.frame(name = rownames(mtcars), mtcars)
+  crs <- data.frame(name = rownames(mtcars), mtcars, stringsAsFactors = FALSE)
   
   attr(crs$name, "label") <- "Car Name"
   attr(crs$name, "description") <- "Derived from rownames"
@@ -27,7 +28,7 @@ test_that("getDictionary() function works as expected.", {
 
 test_that("dictionary() function works as expected with df.", {
   
-  crs <- data.frame(name = rownames(mtcars), mtcars)
+  crs <- data.frame(name = rownames(mtcars), mtcars, stringsAsFactors = FALSE)
   
   attr(crs$name, "label") <- "Car Name"
   attr(crs$name, "description") <- "Derived from rownames"
@@ -63,7 +64,7 @@ test_that("dictionary() function works as expected with tibble.", {
 
 test_that("dictionary() function works as expected with lib.", {
   
-  crs <- data.frame(name = rownames(mtcars), mtcars)
+  crs <- data.frame(name = rownames(mtcars), mtcars, stringsAsFactors = FALSE)
   
   attr(crs$name, "label") <- "Car Name"
   attr(crs$name, "description") <- "Derived from rownames"
@@ -92,7 +93,7 @@ test_that("dictionary() function works as expected with df and standard_eval.", 
   
   options("libr.standard_eval" = TRUE)
   
-  crs <- data.frame(name = rownames(mtcars), mtcars)
+  crs <- data.frame(name = rownames(mtcars), mtcars, stringsAsFactors = FALSE)
   
   attr(crs$name, "label") <- "Car Name"
   attr(crs$name, "description") <- "Derived from rownames"
@@ -112,7 +113,7 @@ test_that("dictionary() function works as expected with lib.", {
   
   options("libr.standard_eval" = TRUE)
   
-  crs <- data.frame(name = rownames(mtcars), mtcars)
+  crs <- data.frame(name = rownames(mtcars), mtcars, stringsAsFactors = FALSE)
   
   attr(crs$name, "label") <- "Car Name"
   attr(crs$name, "description") <- "Derived from rownames"
@@ -128,6 +129,7 @@ test_that("dictionary() function works as expected with lib.", {
   
   res <- dictionary(dat)
   
+  res
   expect_equal(nrow(res), 22)
   
   
@@ -135,3 +137,78 @@ test_that("dictionary() function works as expected with lib.", {
   
   options("libr.standard_eval" = FALSE)
 })
+
+
+test_that("dictionary() parameter checks work as expected.", {
+  
+  f <- "fork"
+  
+  expect_error(dictionary(f))
+  
+  
+})
+
+test_that("dictionary() widths work as expected when width attribute set.", {
+  
+  crs <- data.frame(name = rownames(mtcars), mtcars, fork = "fork",
+                    stringsAsFactors = FALSE)
+  
+  attr(crs$name, "width") <- 4
+  attr(crs$name, "description") <- "Derived from rownames"
+
+  
+  res <- dictionary(crs)
+  
+  res
+  
+  expect_equal(res$Width[1], 4)  
+  expect_equal(is.na(res$Width[13]), TRUE) 
+  
+})
+
+test_that("dictionary() widths work as expected when width attribute not set.", {
+  
+  crs <- data.frame(name = rownames(mtcars), mtcars, fork = "fork", 
+                    stringsAsFactors = FALSE)
+  
+  #attr(crs$name, "width") <- 4
+  attr(crs$name, "description") <- "Derived from rownames"
+  
+  
+  res <- dictionary(crs)
+  
+  res
+  
+  expect_equal(res$Width[1], 19)  
+  expect_equal(res$Width[13], 4) 
+  
+})
+
+test_that("dictionary() function works as expected with user-defined format.", {
+  
+  if (dev) {
+    
+    library(fmtr)
+    
+    fmt <- value(condition(x == 4, "A"),
+                 condition(x == 8, "B"),
+                 condition(TRUE, "C"))
+    
+    
+    crs <- data.frame(name = rownames(mtcars), mtcars, stringsAsFactors = FALSE)
+    
+    fapply(crs$cyl, fmt)
+    
+    attr(crs$cyl, "format") <- fmt 
+    
+    # Shouldn't get an error
+    res <- dictionary(crs)
+    
+    expect_equal(nrow(res), 12)
+  
+  } else
+    expect_equal(TRUE, TRUE)
+  
+})
+
+

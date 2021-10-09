@@ -32,10 +32,10 @@ purpose or source of the variable.}
 \item{width}{The desired width for the column in number of characters.}
 
 \item{format}{The format associated with this column.  See the 
-\code{\link[fmtr]{fmtr}} package for more information about formatting.}
+\strong{fmtr} package for more information about formatting.}
 
 \item{justify}{The desired justification for the column.  This parameter
-it normally used only for fixed-width, character columns.  Valid values
+is normally used only for fixed-width, character columns.  Valid values
 are 'left', 'right', 'center', and 'centre'.}
 
 \item{...}{Any other attributes you wish to assign to this column. Pass
@@ -103,7 +103,7 @@ attr(dat1$mpgcat, "label")
 }
 \seealso{
 \code{\link{dictionary}} function to observe the attributes
-associated with a dataset.  Also see the \code{\link[fmtr]{fdata}} 
+associated with a dataset.  Also see the \code{fdata} 
 function in the \strong{fmtr}
 package for more information on formatting and rendering data frames.
 
