@@ -1,3 +1,10 @@
+# libr 1.2.2
+
+* Added FAQ and Complete Examples
+* Fixed bug on `dictionary()` when encountering datetime variable with
+multiple POSIX classes.
+
+
 # libr 1.2.1 
 
 * Added covr and codecov

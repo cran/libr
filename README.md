@@ -5,7 +5,7 @@
 [![libr downloads](https://cranlogs.r-pkg.org/badges/libr)](https://cran.r-project.org/package=libr)
 [![libr total downloads](https://cranlogs.r-pkg.org/badges/grand-total/libr)](https://cran.r-project.org/package=libr)
 [![R-CMD-check](https://github.com/dbosak01/libr/workflows/R-CMD-check/badge.svg)](https://github.com/dbosak01/libr/actions)
-[![Codecov test coverage](https://codecov.io/gh/dbosak01/libr/branch/master/graph/badge.svg)](https://codecov.io/gh/dbosak01/libr?branch=master)
+[![Codecov test coverage](https://codecov.io/gh/dbosak01/libr/branch/master/graph/badge.svg)](https://app.codecov.io/gh/dbosak01/libr?branch=master)
 
 <!-- badges: end -->
   
@@ -90,10 +90,6 @@ with the following command line:
 If you need help, the first place 
 to turn to is the [libr](https://libr.r-sassy.org) web site. The web site
 has full documentation on all **libr** functions.
-
-If you need additional help, please consult 
-[stackoverflow.com](https://stackoverflow.com).  The stackoverflow 
-community will be very willing to answer your questions.  
 
 If you want to look at the code for the **libr** package, visit the
 github page [here](https://github.com/dbosak01/libr).
