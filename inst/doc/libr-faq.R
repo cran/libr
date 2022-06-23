@@ -43,9 +43,8 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 ## ----eval=FALSE, echo=TRUE----------------------------------------------------
 #  libname(libA, "c:/mypath/mydata1", "sas7bdat")
-#  libname(libB, "c:/mypath/mydata2", "csv")
 #  
-#  lib_add(libB, libA$dat1, name = "dat1")
+#  lib_export(libA, libB, "c:/mypath/mydata2", "csv")
 #  
 
 ## ----eval=FALSE, echo=TRUE----------------------------------------------------

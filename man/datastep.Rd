@@ -15,7 +15,9 @@ datastep(
   retain = NULL,
   attrib = NULL,
   arrays = NULL,
-  sort_check = TRUE
+  sort_check = TRUE,
+  format = NULL,
+  label = NULL
 )
 }
 \arguments{
@@ -85,6 +87,11 @@ The check is turned on if the value of
 is TRUE.  Turn the sort check off if you want to perform by-group 
 processing on unsorted data, or data that is not sorted according
 to the by-group.}
+
+\item{format}{A named list of formats to assign to the output data
+frame.}
+
+\item{label}{A named list of labels to assign to the output data frame.}
 }
 \value{
 The processed data frame, tibble, or data table.
@@ -142,6 +149,10 @@ see the \code{\link{dsattr}} documentation.
 It should be mentioned  that the \code{dsattr} object is not required.  
 You can also set attributes with a name and a default value.  
 The default value can be any valid data value, such as a number or string.
+
+The label and format attributes may also be set with the 'label' and 
+'format' parameters. These parameters accept a named list with the 
+labels or formats, and will be assigned to the output data frame.
 }
 
 \section{Optional Parameters}{
@@ -427,6 +438,7 @@ dictionary(df)
 # 6 df    Tot    integer   Year Total   NA          NA        NA NA          3     0
 # 7 df    Avg    numeric   Year Average NA          NA        NA NA          3     0
 # 8 df    Best   character Best Quarter NA          NA         2 NA          3     0
+
 }
 \seealso{
 \code{\link{libname}} function to create a data library, and
