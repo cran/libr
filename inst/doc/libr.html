@@ -357,8 +357,6 @@ package with four key functions. They are:</p>
 <li><code>libname()</code>: Creates a data library</li>
 <li><code>dictionary()</code>: Creates a data dictionary</li>
 <li><code>datastep()</code>: Performs row-by-row processing of data</li>
-<li><code>%eq%</code>: An infix operator to check equality between
-objects</li>
 </ul>
 </div>
 <div id="how-to-use" class="section level3">
@@ -582,53 +580,6 @@ the input data.</p>
 functionality through use of the <code>by</code> parameter. See
 additional examples on the <code>datastep()</code> help page and in the
 data step <a href="libr-datastep.html">article</a>.</p>
-<div id="the-eq-function" class="section level4">
-<h4>The %eq% Function</h4>
-<p>In Base R, there are two comparison functions: The double-equal (==)
-infix operator, and the <code>identical()</code> function. The weakness
-of the infix operator is that it will not test for NULL or NA values.
-The weakness of the <code>identical()</code> function is it will compare
-everything, including attributes assigned to the objects you are
-comparing. If there is even a small difference in one of these
-attributes, the <code>identical()</code> function will return FALSE.
-This behavior is inconvenient, especially when working with
-<strong>dplyr</strong> functions, as these functions assign many
-attributes to the datasets they are manipulating.</p>
-<p>The <code>%eq%</code> function contained in the <strong>libr</strong>
-packages attempts to provide a more intuitive comparison. The
-<code>%eq%</code> is an infix operator that will test for NA and NULL
-values, and will ignore attributes in any data comparison. These
-qualities make it more suitable for the types of comparisons normally
-encountered when working with data. The suitability of the
-<code>%eq%</code> operator can be illustrated by examining these methods
-side-by-side on the same input data.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set up input data</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>v1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>v2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">attr</span>(v2, <span class="st">&quot;label&quot;</span>) <span class="ot">&lt;-</span> <span class="st">&quot;My Label&quot;</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>v3 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="cn">NA</span>)</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Comparing &quot;equal&quot; vectors</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>v1 <span class="sc">==</span> v2              <span class="co"># TRUE TRUE TRUE</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(v1, v2)     <span class="co"># FALSE</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>v1 <span class="sc">%eq%</span> v2            <span class="co"># TRUE</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Comparing &quot;unequal&quot; vectors</span></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>v1 <span class="sc">==</span> v3              <span class="co"># TRUE TRUE NA</span></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(v1, v3)     <span class="co"># FALSE</span></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>v1 <span class="sc">%eq%</span> v3            <span class="co"># FALSE</span></span></code></pre></div>
-<p>Note the different results returned by the three different comparison
-functions. The <code>%eq%</code> operator is similar to the
-<code>identical()</code> function in that it will always return a single
-TRUE or FALSE value. The difference is that it ignored the “label”
-attribute assigned to vector <em>v2</em>, and only looked at the data
-values. Since it saw all the data values were equal, the
-<code>%eq%</code> operator returned TRUE, while the
-<code>identical()</code> function returned FALSE.</p>
-<p>You can see some more examples of the <code>%eq%</code> operator in
-the help documentation, or in the <a href="libr-eq.html">Enhanced
-Equality</a> article.</p>
-</div>
 </div>
 <div id="next-steps" class="section level3">
 <h3>Next Steps</h3>
@@ -638,7 +589,6 @@ articles. Those articles include:</p>
 <li><a href="libr-basics.html">Basic Library Operations</a></li>
 <li><a href="libr-management.html">Library Management</a></li>
 <li><a href="libr-datastep.html">Data Step Operations</a></li>
-<li><a href="libr-eq.html">Enhanced Equality</a></li>
 <li><a href="libr-example1.html">Complete Example 1</a></li>
 <li><a href="libr-example2.html">Complete Example 2</a></li>
 </ul>

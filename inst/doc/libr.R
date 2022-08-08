@@ -91,21 +91,3 @@ knitr::opts_chunk$set(
 #  # 10 ABC-01-114    72 60+
 #  # # ... with 77 more rows
 
-## ----eval=FALSE, echo=TRUE----------------------------------------------------
-#  # Set up input data
-#  v1 <- c(1, 2, 3)
-#  v2 <- c(1, 2, 3)
-#  attr(v2, "label") <- "My Label"
-#  v3 <- c(1, 2, NA)
-#  
-#  # Comparing "equal" vectors
-#  v1 == v2              # TRUE TRUE TRUE
-#  identical(v1, v2)     # FALSE
-#  v1 %eq% v2            # TRUE
-#  
-#  # Comparing "unequal" vectors
-#  v1 == v3              # TRUE TRUE NA
-#  identical(v1, v3)     # FALSE
-#  v1 %eq% v3            # FALSE
-#  
-

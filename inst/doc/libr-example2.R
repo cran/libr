@@ -10,6 +10,7 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 ## ----eval=FALSE, echo=TRUE----------------------------------------------------
 #  library(tidyverse)
 #  library(sassy)
+#  library(common)
 #  
 #  options("logr.autolog" = TRUE,
 #          "logr.notes" = FALSE)
