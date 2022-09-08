@@ -31,8 +31,36 @@ add_autos <- function(df, groups = NULL, sort_check = FALSE) {
   
   } else {
     
-    df["first."] <- c(TRUE, rep(FALSE, times = nrow(df) - 1))
-    df["last."] <- c(rep(FALSE, times = nrow(df) - 1), TRUE)
+    if (nrow(df) > 0) {
+      df["first."] <- c(TRUE, rep(FALSE, times = nrow(df) - 1))
+      df["last."] <- c(rep(FALSE, times = nrow(df) - 1), TRUE)
+    }
+    
+  }
+  
+  if (nrow(df) > 0)
+    df[["..delete"]] <- FALSE
+  else {
+    
+
+    
+    if (ncol(df) == 0) {
+      df <- data.frame("..delete" = FALSE, stringsAsFactors = FALSE)
+    } else {
+      nms <- names(df)
+      
+      nlst <- list()
+      for (nm in nms){
+       nlst[[nm]] <- NA 
+      }
+      
+      nlst[["..delete"]] <- FALSE
+      df <- as.data.frame(nlst, row.names = NULL, stringsAsFactors = FALSE)
+      
+    }
+    
+
+    
     
   }
   

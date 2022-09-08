@@ -1,3 +1,25 @@
+# libr 1.2.8
+* Fixed bug on datastep that sometimes was causing variables to lose their attributes.
+* Added "where" parameter to datastep.
+* Fix bug on datastep that was causing a single variable dataframe to be returned
+as a vector.
+* Cleared rownames on datastep exit.
+* Added "MaxChar" column to dictionary to hold the maximum number of characters
+for a data value in the column.  This is different from "width" which
+is the user-defined, proscribed width.  MaxChar is the actual width with no 
+padding.
+* Added "rda" engine to libname.
+* Allowed single value NSE on drop, keep, and by parameter of `datastep()`.
+For multiple values, use the `v()` function.
+* Added `output()` function to datastep.
+* Improved datastep output column ordering. New variables were coming out
+in the opposite order they were added.  Now they are better.
+* Added "set" parameter to datastep.
+* Added "merge", "merge_by", and "merge_in" parameter to `datastep()`.
+* Fixed bug on `datastep()` rename.
+* Added/fixed documentation.
+* Updated logo.
+
 # libr 1.2.5
 * BREAKING CHANGE: Removed the `%eq%` operator from this package, as it has
 been moved to the **common** package.  A dependency on **common** has 

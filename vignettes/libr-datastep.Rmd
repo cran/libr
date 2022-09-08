@@ -379,6 +379,266 @@ dat
 # 1960 417 391 419 461 472 535 622 606 508 461 390 432 5714 476.1667 Jul
 
 ```
+In the example above, the "Tot", "Mean", and "Top" columns were all calculated
+using the datastep array.  These types of row-wise statistics are hard 
+to calculate otherwise.
+
+### Filtering and Duplicating Rows
+The datastep provides different ways to control which rows are output.
+
+First, the function has a `where` parameter to pass a filter expression to
+the datastep.  The where clause will be executed at the end of datastep
+processing.  Pass in the where clause 
+using the `expression()` function.  Like so:
+```{r eval=FALSE, echo=TRUE}
+# Prepare sample data
+dat <- as.data.frame(HairEyeColor)
+
+# Filter for black hair and blue eyes
+res <- datastep(dat, 
+                where = expression(Hair == "Black" & Eye == "Blue"), 
+                {})
+
+res
+#    Hair  Eye    Sex Freq
+# 1 Black Blue   Male   11
+# 2 Black Blue Female    9
+
+```
+
+The datastep also recognizes the `delete()` and `output()` functions to
+remove or duplicate rows from inside the datastep.  These functions give
+you conditional control over which rows are output.
+```{r eval=FALSE, echo=TRUE}
+# Delete rows with frequencies less than 25
+res1 <- datastep(dat, {
+  
+         if (Freq < 25)
+           delete()
+  
+       })
+res1
+#     Hair   Eye    Sex Freq
+# 1  Black Brown   Male   32
+# 2  Brown Brown   Male   53
+# 3  Brown  Blue   Male   50
+# 4  Blond  Blue   Male   30
+# 5  Brown Hazel   Male   25
+# 6  Black Brown Female   36
+# 7  Brown Brown Female   66
+# 8  Brown  Blue Female   34
+# 9  Blond  Blue Female   64
+# 10 Brown Hazel Female   29
+
+# Only output rows for brown-eyes and frequencies over 25
+res2 <- datastep(dat, {
+          
+          if (Eye == "Brown") {
+            if (Freq >= 25) {
+              
+              output()
+              
+            }
+          }
+  
+        })
+
+res2
+#    Hair   Eye    Sex Freq
+# 1 Black Brown   Male   32
+# 2 Brown Brown   Male   53
+# 3 Black Brown Female   36
+# 4 Brown Brown Female   66
+
+```
+You can also use the `output()` function to create 
+datasets from scratch, just like in SAS®.  To create a dataset from 
+scratch, simply pass in an empty data frame and output the desired values.
+```{r eval=FALSE, echo=TRUE}
+# Create metadata 
+res3 <- datastep(data.frame(), {
+  
+  
+          name <- "mtcars"
+          rows <- nrow(mtcars)
+          cols <- ncol(mtcars)
+          output()
+          
+          name <- "iris"
+          rows <- nrow(iris)
+          cols <- ncol(iris)
+          output()
+
+
+          name <- "beaver1"
+          rows <- nrow(beaver1)
+          cols <- ncol(beaver1)
+          output()
+          
+  
+        })
+
+res3
+#      name rows cols
+# 1  mtcars   32   11
+# 2    iris  150    5
+# 3 beaver1  114    4
+
+```
+### Set and Merge Operations
+
+When working with data, joining datasets is an essential activity.  While there
+are many different functions in R to perform joins, the `datastep()` 
+"set" and "merge" parameters offer unusual flexibility.
+
+The "set" parameter stacks two or more datasets.  The "merge" parameter joins
+two or more datasets. Together, these two parameters allow you to perform
+the most common types of data combinations.
+
+To illustrate, first let's create up some sample datasets. The datasets we 
+will create include one "region" dataset, and two "stores" datasets.  Note
+that the columns on the stores datasets are not identical.
+
+```{r eval=FALSE, echo=TRUE}
+# Create sample data
+region <- read.table(header = TRUE, text = '
+  REGION   NAME
+  R01      East
+  R02      West
+  R03      North
+  R04      South
+', stringsAsFactors = FALSE)
+
+# First stores dataset
+stores1 <- read.table(header = TRUE, text = '
+  ID  NAME             SIZE REGION FRANCHISE
+  A01 "Eastern Lumber"    L    R01        T
+  A02 "Tri-City Hardwood" M    R02        F
+  A05 "Reliable Hardware" S    R01        T
+', stringsAsFactors = FALSE)
+
+# Extra column on this one
+stores2 <- read.table(header = TRUE, text = '
+  ID  NAME             SIZE REGION
+  A03 "AAA Mills"         S    R05
+  A04 "Home and Yard"     L    R03
+', stringsAsFactors = FALSE)
+```
+Despite not having the same columns, the two stores datasets can be set
+using the `datastep()` function.  The function will fill in the missing values
+automatically.  Like so:
+
+```{r eval=FALSE, echo=TRUE}
+# Set operation
+allstores <- datastep(stores1, set = stores2, {})
+
+# Extra values filled with NA
+allstores
+#    ID              NAME SIZE REGION FRANCHISE
+# 1 A01    Eastern Lumber    L    R01      TRUE
+# 2 A02 Tri-City Hardwood    M    R02     FALSE
+# 3 A05 Reliable Hardware    S    R01      TRUE
+# 4 A03         AAA Mills    S    R05        NA
+# 5 A04     Home and Yard    L    R03        NA
+```
+Let's pretend we noticed the missing data, and decide to fill it in.  We
+can do that by merging the missing FRANCHISE values to the second stores
+dataset. First let's create the missing data:
+```{r eval=FALSE, echo=TRUE}
+# Create small dataset of missing FRANCHISE values
+franchises <- data.frame(FRANCHISE = c(F, F), stringsAsFactors = FALSE) 
+franchises
+#   FRANCHISE
+# 1     FALSE
+# 2     FALSE
+```
+Next we can merge in the missing data on "stores2", and set the two store
+datasets again:
+```{r eval=FALSE, echo=TRUE}
+# Merge in missing FRANCHISE column
+stores2mod <- datastep(stores2, merge = franchises, {})
+stores2mod
+#    ID          NAME SIZE REGION FRANCHISE
+# 1 A03     AAA Mills    S    R05     FALSE
+# 2 A04 Home and Yard    L    R03     FALSE
+
+# Set again
+allstores <- datastep(stores1, set = stores2mod, {})
+
+# Now everything is aligned
+allstores
+#    ID              NAME SIZE REGION FRANCHISE
+# 1 A01    Eastern Lumber    L    R01      TRUE
+# 2 A02 Tri-City Hardwood    M    R02     FALSE
+# 3 A05 Reliable Hardware    S    R01      TRUE
+# 4 A03         AAA Mills    S    R05     FALSE
+# 5 A04     Home and Yard    L    R03     FALSE
+
+```
+Observe that we did not have to specify a join condition on the merge.  When
+no "merge_by" is indicated, the datastep will simply append the new 
+columns to the right - without complaining. This behavior is very convenient.  
+
+Now let's do another join, but this time we will specify a join condition.
+We will join in the store regions by the region ID.  We will also set up
+merge flags so we can see which rows were in which input dataset.
+```{r eval=FALSE, echo=TRUE}
+
+# Merge operation - Outer Join
+res <- datastep(allstores, merge = region,
+                merge_by = "REGION",
+                merge_in = c("inA", "inB"), {})
+
+# View results
+res
+#     ID            NAME.1 SIZE REGION FRANCHISE NAME.2 inA inB
+# 1  A01    Eastern Lumber    L    R01      TRUE   East   1   1
+# 2  A05 Reliable Hardware    S    R01      TRUE   East   1   1
+# 3  A02 Tri-City Hardwood    M    R02     FALSE   West   1   1
+# 4  A04     Home and Yard    L    R03     FALSE  North   1   1
+# 5  A03         AAA Mills    S    R05     FALSE   <NA>   1   0
+# 6 <NA>              <NA> <NA>    R04        NA  South   0   1
+```
+Notice three things: 
+
+1. The "Name" field appeared in both datasets, and
+was therefore appended with suffixes to distinguish them.
+2. The region value "R05" is in the stores dataset, but not in the 
+region dataset. It appears this value was coded incorrectly.
+3. Region "R04" had no stores.
+
+Let's try one last time to fix the above issues.  We can fix the column names
+with the "rename" parameter, and exclude rows with a "where" expression.  Also,
+we can recode "R05" to "R04" inside the datastep.  Finally, we'll drop
+the merge flags to clean up the columns.
+```{r eval=FALSE, echo=TRUE}
+
+# Merge operation - Left join and clean up
+res <- datastep(allstores, merge = region,
+                merge_by = "REGION",
+                merge_in = c("inA", "inB"), 
+                rename = c(NAME.1 = "STORE_NAME", NAME.2 = "REGION_NAME"),
+                where = expression(inA == TRUE),
+                drop = c("inA", "inB"),
+                {
+                  if (REGION == "R05") {
+                    REGION <- "R04"
+                    NAME.2 <- "South"
+                    
+                  }
+                  
+                })
+#'
+# View results 
+res
+#    ID        STORE_NAME SIZE REGION FRANCHISE REGION_NAME
+# 1 A01    Eastern Lumber    L    R01      TRUE        East
+# 2 A05 Reliable Hardware    S    R01      TRUE        East
+# 3 A02 Tri-City Hardwood    M    R02     FALSE        West
+# 4 A04     Home and Yard    L    R03     FALSE       North
+# 5 A03         AAA Mills    S    R04     FALSE       South
+```
+
 Next: [Disclaimer](libr-disclaimer.html)
 
 

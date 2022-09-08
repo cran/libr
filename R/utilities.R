@@ -209,7 +209,7 @@ writeData <- function(x, ext, file_path, force = FALSE) {
       attr(x, "checksum") <- md5sum(file_path)
     }
     
-  } else if (tolower(ext) == "rdata") {
+  } else if (tolower(ext) %in% c("rdata", "rda")) {
     
     if (!cs_comp | force) {
       if (file.exists(file_path))
@@ -479,6 +479,23 @@ log_logr <- function(x) {
     }
   }
 }
+
+
+
+# Check if logr.output option is set or not
+log_output <- function() {
+  
+  ret <- TRUE
+  tmp <- options("logr.output")
+  if (!is.null(tmp$logr.output)) {
+    
+    ret <- tmp$logr.output
+    
+  }
+  
+  return(ret)
+}
+
 
 
 # @noRd

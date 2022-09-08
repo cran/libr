@@ -281,3 +281,202 @@ knitr::opts_chunk$set(
 #  # 1960 417 391 419 461 472 535 622 606 508 461 390 432 5714 476.1667 Jul
 #  
 
+## ----eval=FALSE, echo=TRUE----------------------------------------------------
+#  # Prepare sample data
+#  dat <- as.data.frame(HairEyeColor)
+#  
+#  # Filter for black hair and blue eyes
+#  res <- datastep(dat,
+#                  where = expression(Hair == "Black" & Eye == "Blue"),
+#                  {})
+#  
+#  res
+#  #    Hair  Eye    Sex Freq
+#  # 1 Black Blue   Male   11
+#  # 2 Black Blue Female    9
+#  
+
+## ----eval=FALSE, echo=TRUE----------------------------------------------------
+#  # Delete rows with frequencies less than 25
+#  res1 <- datastep(dat, {
+#  
+#           if (Freq < 25)
+#             delete()
+#  
+#         })
+#  res1
+#  #     Hair   Eye    Sex Freq
+#  # 1  Black Brown   Male   32
+#  # 2  Brown Brown   Male   53
+#  # 3  Brown  Blue   Male   50
+#  # 4  Blond  Blue   Male   30
+#  # 5  Brown Hazel   Male   25
+#  # 6  Black Brown Female   36
+#  # 7  Brown Brown Female   66
+#  # 8  Brown  Blue Female   34
+#  # 9  Blond  Blue Female   64
+#  # 10 Brown Hazel Female   29
+#  
+#  # Only output rows for brown-eyes and frequencies over 25
+#  res2 <- datastep(dat, {
+#  
+#            if (Eye == "Brown") {
+#              if (Freq >= 25) {
+#  
+#                output()
+#  
+#              }
+#            }
+#  
+#          })
+#  
+#  res2
+#  #    Hair   Eye    Sex Freq
+#  # 1 Black Brown   Male   32
+#  # 2 Brown Brown   Male   53
+#  # 3 Black Brown Female   36
+#  # 4 Brown Brown Female   66
+#  
+
+## ----eval=FALSE, echo=TRUE----------------------------------------------------
+#  # Create metadata
+#  res3 <- datastep(data.frame(), {
+#  
+#  
+#            name <- "mtcars"
+#            rows <- nrow(mtcars)
+#            cols <- ncol(mtcars)
+#            output()
+#  
+#            name <- "iris"
+#            rows <- nrow(iris)
+#            cols <- ncol(iris)
+#            output()
+#  
+#  
+#            name <- "beaver1"
+#            rows <- nrow(beaver1)
+#            cols <- ncol(beaver1)
+#            output()
+#  
+#  
+#          })
+#  
+#  res3
+#  #      name rows cols
+#  # 1  mtcars   32   11
+#  # 2    iris  150    5
+#  # 3 beaver1  114    4
+#  
+
+## ----eval=FALSE, echo=TRUE----------------------------------------------------
+#  # Create sample data
+#  region <- read.table(header = TRUE, text = '
+#    REGION   NAME
+#    R01      East
+#    R02      West
+#    R03      North
+#    R04      South
+#  ', stringsAsFactors = FALSE)
+#  
+#  # First stores dataset
+#  stores1 <- read.table(header = TRUE, text = '
+#    ID  NAME             SIZE REGION FRANCHISE
+#    A01 "Eastern Lumber"    L    R01        T
+#    A02 "Tri-City Hardwood" M    R02        F
+#    A05 "Reliable Hardware" S    R01        T
+#  ', stringsAsFactors = FALSE)
+#  
+#  # Extra column on this one
+#  stores2 <- read.table(header = TRUE, text = '
+#    ID  NAME             SIZE REGION
+#    A03 "AAA Mills"         S    R05
+#    A04 "Home and Yard"     L    R03
+#  ', stringsAsFactors = FALSE)
+
+## ----eval=FALSE, echo=TRUE----------------------------------------------------
+#  # Set operation
+#  allstores <- datastep(stores1, set = stores2, {})
+#  
+#  # Extra values filled with NA
+#  allstores
+#  #    ID              NAME SIZE REGION FRANCHISE
+#  # 1 A01    Eastern Lumber    L    R01      TRUE
+#  # 2 A02 Tri-City Hardwood    M    R02     FALSE
+#  # 3 A05 Reliable Hardware    S    R01      TRUE
+#  # 4 A03         AAA Mills    S    R05        NA
+#  # 5 A04     Home and Yard    L    R03        NA
+
+## ----eval=FALSE, echo=TRUE----------------------------------------------------
+#  # Create small dataset of missing FRANCHISE values
+#  franchises <- data.frame(FRANCHISE = c(F, F), stringsAsFactors = FALSE)
+#  franchises
+#  #   FRANCHISE
+#  # 1     FALSE
+#  # 2     FALSE
+
+## ----eval=FALSE, echo=TRUE----------------------------------------------------
+#  # Merge in missing FRANCHISE column
+#  stores2mod <- datastep(stores2, merge = franchises, {})
+#  stores2mod
+#  #    ID          NAME SIZE REGION FRANCHISE
+#  # 1 A03     AAA Mills    S    R05     FALSE
+#  # 2 A04 Home and Yard    L    R03     FALSE
+#  
+#  # Set again
+#  allstores <- datastep(stores1, set = stores2mod, {})
+#  
+#  # Now everything is aligned
+#  allstores
+#  #    ID              NAME SIZE REGION FRANCHISE
+#  # 1 A01    Eastern Lumber    L    R01      TRUE
+#  # 2 A02 Tri-City Hardwood    M    R02     FALSE
+#  # 3 A05 Reliable Hardware    S    R01      TRUE
+#  # 4 A03         AAA Mills    S    R05     FALSE
+#  # 5 A04     Home and Yard    L    R03     FALSE
+#  
+
+## ----eval=FALSE, echo=TRUE----------------------------------------------------
+#  
+#  # Merge operation - Outer Join
+#  res <- datastep(allstores, merge = region,
+#                  merge_by = "REGION",
+#                  merge_in = c("inA", "inB"), {})
+#  
+#  # View results
+#  res
+#  #     ID            NAME.1 SIZE REGION FRANCHISE NAME.2 inA inB
+#  # 1  A01    Eastern Lumber    L    R01      TRUE   East   1   1
+#  # 2  A05 Reliable Hardware    S    R01      TRUE   East   1   1
+#  # 3  A02 Tri-City Hardwood    M    R02     FALSE   West   1   1
+#  # 4  A04     Home and Yard    L    R03     FALSE  North   1   1
+#  # 5  A03         AAA Mills    S    R05     FALSE   <NA>   1   0
+#  # 6 <NA>              <NA> <NA>    R04        NA  South   0   1
+
+## ----eval=FALSE, echo=TRUE----------------------------------------------------
+#  
+#  # Merge operation - Left join and clean up
+#  res <- datastep(allstores, merge = region,
+#                  merge_by = "REGION",
+#                  merge_in = c("inA", "inB"),
+#                  rename = c(NAME.1 = "STORE_NAME", NAME.2 = "REGION_NAME"),
+#                  where = expression(inA == TRUE),
+#                  drop = c("inA", "inB"),
+#                  {
+#                    if (REGION == "R05") {
+#                      REGION <- "R04"
+#                      NAME.2 <- "South"
+#  
+#                    }
+#  
+#                  })
+#  #'
+#  # View results
+#  res
+#  #    ID        STORE_NAME SIZE REGION FRANCHISE REGION_NAME
+#  # 1 A01    Eastern Lumber    L    R01      TRUE        East
+#  # 2 A05 Reliable Hardware    S    R01      TRUE        East
+#  # 3 A02 Tri-City Hardwood    M    R02     FALSE        West
+#  # 4 A04     Home and Yard    L    R03     FALSE       North
+#  # 5 A03         AAA Mills    S    R04     FALSE       South
+

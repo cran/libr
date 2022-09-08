@@ -10,7 +10,7 @@
 <!-- badges: end -->
   
 # Introduction to **libr** 
-<img src="./man/images/libr_blue.png" align="left" height="138" style="margin-right: 20px"/>
+<img src="./man/images/libr_new.png" align="left" height="138" style="margin-right: 20px"/>
 
 R is a very flexible and powerful language.  But there are some inconveniences
 when working with data:
@@ -85,5 +85,6 @@ If you encounter a bug or have a feature request, please submit an issue
 
 The **libr** package is part of the **sassy** meta-package. 
 The **sassy** meta-package includes several packages that help make R
-easier for SAS® programmers.  You can read more about the **sassy** package
-[here](https://sassy.r-sassy.org).
+easier for everyone, especially people with a background in SAS® software. 
+You can read more about the **sassy** package
+[here](https://r-sassy.org/).

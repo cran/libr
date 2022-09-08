@@ -17,11 +17,12 @@
 #'   \item{\strong{Description:} A description applied to this column.}
 #'   \item{\strong{Format:} The value of the format attribute.}
 #'   \item{\strong{Width:} The value of the width attribute if any have been
-#'   assigned.  If no width attributes have been assigned, 
-#'   the max character width.}
+#'   assigned.}
 #'   \item{\strong{Justify:} The justification or alignment attribute value.}
 #'   \item{\strong{Rows:} The number of data rows.}
 #'   \item{\strong{NAs:} The number of NA values in this column.}
+#'   \item{\strong{MaxChar:} The maximum character length of the
+#'    values in this column with no padding.}
 #' }
 #' @import tibble
 #' @seealso \code{\link{libname}} to create a data library.  Also 
@@ -42,17 +43,17 @@
 #' # Examine the dictionary for the library
 #' dictionary(dat)
 #' # A tibble: 9 x 10
-#' #   Name    Column       Class   Label Description Format Width Justify  Rows   NAs
-#' #   <chr>   <chr>        <chr>   <lgl> <lgl>       <lgl>  <lgl> <lgl>   <int> <int>
-#' # 1 beaver1 day          numeric NA    NA          NA     NA    NA        114     0
-#' # 2 beaver1 time         numeric NA    NA          NA     NA    NA        114     0
-#' # 3 beaver1 temp         numeric NA    NA          NA     NA    NA        114     0
-#' # 4 beaver1 activ        numeric NA    NA          NA     NA    NA        114     0
-#' # 5 iris    Sepal.Length numeric NA    NA          NA     NA    NA        150     0
-#' # 6 iris    Sepal.Width  numeric NA    NA          NA     NA    NA        150     0
-#' # 7 iris    Petal.Length numeric NA    NA          NA     NA    NA        150     0
-#' # 8 iris    Petal.Width  numeric NA    NA          NA     NA    NA        150     0
-#' # 9 iris    Species      factor  NA    NA          NA     NA    NA        150     0
+#' #   Name    Column       Class   Label Description Format Width Justify  Rows   NAs MaxChar
+#' #   <chr>   <chr>        <chr>   <lgl> <lgl>       <lgl>  <lgl> <lgl>   <int> <int>   <int>
+#' # 1 beaver1 day          numeric NA    NA          NA     NA    NA        114     0       3
+#' # 2 beaver1 time         numeric NA    NA          NA     NA    NA        114     0       4
+#' # 3 beaver1 temp         numeric NA    NA          NA     NA    NA        114     0       5
+#' # 4 beaver1 activ        numeric NA    NA          NA     NA    NA        114     0       1
+#' # 5 iris    Sepal.Length numeric NA    NA          NA     NA    NA        150     0       3
+#' # 6 iris    Sepal.Width  numeric NA    NA          NA     NA    NA        150     0       3
+#' # 7 iris    Petal.Length numeric NA    NA          NA     NA    NA        150     0       3
+#' # 8 iris    Petal.Width  numeric NA    NA          NA     NA    NA        150     0       3
+#' # 9 iris    Species      factor  NA    NA          NA     NA    NA        150     0      10
 #' 
 #' # Clean up
 #' lib_delete(dat)
@@ -115,7 +116,67 @@ getDictionary <- function(x, dsnm) {
   
   for (nm in names(x)) {
     
+    cntr <- cntr + 1
+    
+    lbl <- attr(x[[nm]], "label")
+    desc <- attr(x[[nm]], "description")
+    fmt <- paste(as.character(attr(x[[nm]], "format")), collapse = "\n")
+    jst <- attr(x[[nm]], "justify")
+    wdth <- attr(x[[nm]], "width")
+    
+    if (fmt == "")
+      fmt <- NA
+    
+    if (length(x[[nm]]) > 0) {
+      if (typeof(x[[nm]]) == "character")
+        str_wdth[cntr] <-  suppressWarnings(max(nchar(x[[nm]]), na.rm = TRUE))
+      else 
+        str_wdth[cntr] <-  suppressWarnings(max(nchar(as.character(x[[nm]])), 
+                                                na.rm = TRUE))
+      
+      if (is.na(str_wdth[cntr]) | str_wdth[cntr] == -Inf)
+        str_wdth[cntr] <- 0
+        
+    } else {
+      str_wdth[cntr] <- NA
+    }
+    
+    rw <- data.frame(Name = dsnm,
+                     Column = nm,
+                     Class = paste0(class(x[[nm]]), collapse = " "),
+                     Label = ifelse(!is.null(lbl), lbl, as.character(NA)),
+                     Description = ifelse(!is.null(desc), desc, as.character(NA)),
+                     Format = ifelse(!is.null(fmt), fmt, NA),
+                     Width = ifelse(!is.null(wdth), wdth, NA),
+                     Justify = ifelse(!is.null(jst), jst, as.character(NA)),
+                     Rows = nrow(x),
+                     NAs = sum(is.na(x[[nm]])),
+                     MaxChar = str_wdth[cntr])
+                    
+    if (is.null(ret))
+      ret <- rw
+    else 
+      ret <- rbind(ret, rw)
+    
+  }
+  
+  
+  return(ret)
+  
+}
 
+
+getDictionary_back <- function(x, dsnm) {
+  
+  ret <- NULL
+  rw <- NULL
+  usr_wdth <- c()
+  str_wdth <- c()
+  cntr <- 0
+  
+  for (nm in names(x)) {
+    
+    
     
     cntr <- cntr + 1
     
@@ -131,13 +192,13 @@ getDictionary <- function(x, dsnm) {
     if (is.null(wdth)) {
       if (length(x[[nm]]) > 0) {
         str_wdth[cntr] <- ifelse(typeof(x[[nm]]) == "character", 
-               max(nchar(x[[nm]])),
-               NA) 
+                                 max(nchar(x[[nm]])),
+                                 NA) 
       } else {
         
         str_wdth[cntr] <- NA
       }
-        
+      
     } else {
       usr_wdth[cntr] <- wdth 
     }
@@ -152,8 +213,8 @@ getDictionary <- function(x, dsnm) {
                      Justify = ifelse(!is.null(jst), jst, as.character(NA)),
                      Rows = nrow(x),
                      NAs = sum(is.na(x[[nm]])))
-                     
-                     
+    
+    
     if (is.null(ret))
       ret <- rw
     else 
@@ -168,3 +229,4 @@ getDictionary <- function(x, dsnm) {
   return(ret)
   
 }
+
