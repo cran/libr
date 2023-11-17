@@ -12,16 +12,7 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 #  
 
 ## ----eval=FALSE, echo=TRUE----------------------------------------------------
-#  lib_load(mylib)
-
-## ----eval=FALSE, echo=TRUE----------------------------------------------------
-#  summary(mylib.dat1$var1)
-
-## ----eval=FALSE, echo=TRUE----------------------------------------------------
-#  lib_write(mylib)
-
-## ----eval=FALSE, echo=TRUE----------------------------------------------------
-#  lib_unload(mylib)
+#  mylib$mydataset
 
 ## ----eval=FALSE, echo=TRUE----------------------------------------------------
 #  libname(mylib, "c:/mypath/mydata", "csv", filter = "a*")
@@ -61,11 +52,8 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 #  # Define data library
 #  libname(dat, "./data", "csv")
 #  
-#  # Loads data into workspace
-#  lib_load(dat)
-#  
 #  # Prepare data
-#  dm_mod <- dat.DM %>%
+#  dm_mod <- dat$DM %>%
 #    select(USUBJID, SEX, AGE, ARM) %>%
 #    filter(ARM != "SCREEN FAILURE") %>%
 #    datastep({
@@ -81,5 +69,4 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 #  
 #    })
 #  
-#  lib_unload(dat)
 

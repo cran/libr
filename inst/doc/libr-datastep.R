@@ -134,6 +134,47 @@ knitr::opts_chunk$set(
 ## ----eval=FALSE, echo=TRUE----------------------------------------------------
 #  library(libr)
 #  
+#  # Create sample data
+#  df <- data.frame(HairEyeColor)[seq(2, 32, 2), ]
+#  
+#  # Sort by groups
+#  df <- sort(df, by = c("Sex", "Hair"))
+#  
+#  # Identify start and end of by-groups
+#  df2 <- datastep(df,
+#     drop = c("Eye", "Freq"),
+#     by = c("Sex", "Hair"), {
+#  
+#      fSex <- first.Sex
+#      lSex <- last.Sex
+#      fHair <- first.Hair
+#      lHair <- last.Hair
+#  
+#    })
+#  
+#  df2
+#  #     Hair    Sex  fSex  lSex fHair lHair
+#  # 1  Brown   Male  TRUE FALSE  TRUE FALSE
+#  # 2  Brown   Male FALSE FALSE FALSE FALSE
+#  # 3  Brown   Male FALSE FALSE FALSE FALSE
+#  # 4  Brown   Male FALSE FALSE FALSE  TRUE
+#  # 5  Blond   Male FALSE FALSE  TRUE FALSE
+#  # 6  Blond   Male FALSE FALSE FALSE FALSE
+#  # 7  Blond   Male FALSE FALSE FALSE FALSE
+#  # 8  Blond   Male FALSE  TRUE FALSE  TRUE
+#  # 9  Brown Female  TRUE FALSE  TRUE FALSE
+#  # 10 Brown Female FALSE FALSE FALSE FALSE
+#  # 11 Brown Female FALSE FALSE FALSE FALSE
+#  # 12 Brown Female FALSE FALSE FALSE  TRUE
+#  # 13 Blond Female FALSE FALSE  TRUE FALSE
+#  # 14 Blond Female FALSE FALSE FALSE FALSE
+#  # 15 Blond Female FALSE FALSE FALSE FALSE
+#  # 16 Blond Female FALSE  TRUE FALSE  TRUE
+#  
+
+## ----eval=FALSE, echo=TRUE----------------------------------------------------
+#  library(libr)
+#  
 #  # Categorize mpg as above or below the mean
 #  df <- datastep(mtcars,
 #    keep = c("mpg", "cyl", "mean_mpg", "mpgcat"),

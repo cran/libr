@@ -16,6 +16,29 @@ knitr::opts_chunk$set(
 #  
 
 ## ----eval=FALSE, echo=TRUE----------------------------------------------------
+#  # View a dataset
+#  sdtm$DM
+#  # # A tibble: 87 × 24
+#  #    STUDYID DOMAIN USUBJID SUBJID RFSTDTC    RFENDTC RFXSTDTC RFXENDTC RFICDTC    RFPENDTC
+#  #    <chr>   <chr>  <chr>   <chr>  <date>     <date>  <lgl>    <lgl>    <date>     <date>
+#  #  1 ABC     DM     ABC-01… 049    2006-11-07 NA      NA       NA       2006-10-25 NA
+#  #  2 ABC     DM     ABC-01… 050    2006-11-02 NA      NA       NA       2006-10-25 NA
+#  #  3 ABC     DM     ABC-01… 051    2006-11-02 NA      NA       NA       2006-10-25 NA
+#  #  4 ABC     DM     ABC-01… 052    2006-11-06 NA      NA       NA       2006-10-31 NA
+#  #  5 ABC     DM     ABC-01… 053    2006-11-08 NA      NA       NA       2006-11-01 NA
+#  #  6 ABC     DM     ABC-01… 054    2006-11-16 NA      NA       NA       2006-11-07 NA
+#  #  7 ABC     DM     ABC-01… 055    2006-12-06 NA      NA       NA       2006-10-31 NA
+#  #  8 ABC     DM     ABC-01… 056    2006-11-28 NA      NA       NA       2006-11-21 NA
+#  #  9 ABC     DM     ABC-01… 113    2006-12-05 NA      NA       NA       2006-11-28 NA
+#  # 10 ABC     DM     ABC-01… 114    2006-12-14 NA      NA       NA       2006-12-01 NA
+#  # #  77 more rows
+#  # #  14 more variables: DTHDTC <lgl>, DTHFL <lgl>, SITEID <chr>, BRTHDTC <date>, AGE <dbl>,
+#  # #   AGEU <chr>, SEX <chr>, RACE <chr>, ETHNIC <chr>, ARMCD <chr>, ARM <chr>, ACTARMCD <lgl>,
+#  # #   ACTARM <lgl>, COUNTRY <lgl>
+#  # #  Use `print(n = ...)` to see more rows
+#  
+
+## ----eval=FALSE, echo=TRUE----------------------------------------------------
 #  
 #  lib_load(sdtm)
 #  # # library 'sdtm': 8 items
