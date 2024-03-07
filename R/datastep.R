@@ -719,6 +719,20 @@ datastep <- function(data, steps, keep = NULL,
     
   } else {
     
+    # Sometimes the local environment cannot access the parent frame.
+    # If this happens, transfer any variables from the parent frame 
+    # to the local frame.
+    lf <- sys.frame(sys.nframe())
+    pf <- parent.frame()
+    pnms <- ls(pf)
+    lnms <- ls(lf)
+    for (pnm in pnms) {
+      if (!pnm %in% lnms) {
+        #assign(pnm, pf[[pnm]], envir = lf)
+        lf[[pnm]] <- pf[[pnm]]
+      }
+    }
+
     # Step through row by row
     for (n. in seq_len(rowcount)) {
       
@@ -755,9 +769,12 @@ datastep <- function(data, steps, keep = NULL,
       
       
       # Evaluate the code for the row
-      ret[[n.]]  <-  within(rw, eval(code), keepAttrs = TRUE)
-      
-  
+      # ret[[n.]]  <-  within(rw, eval(code), 
+      #                       keepAttrs = TRUE)
+
+      # Evaluate the code for the row
+      ret[[n.]] <- within(rw, eval(code, enclos = lf))
+
     }
     
     # Bind all rows
@@ -768,7 +785,8 @@ datastep <- function(data, steps, keep = NULL,
       ret <- bind_rows(ret, .id = "column_label")
     }
     ret["column_label"] <- NULL
-  
+    
+
   }
   
   

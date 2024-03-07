@@ -1,8 +1,8 @@
-ef2ba7fa2105465c6dac70410c0b715f *DESCRIPTION
+414eba7218b7b99daf052848bfba4440 *DESCRIPTION
 6b78d23a7ae1f5596d481a85fdb39762 *NAMESPACE
-7849c1f95b8cd685352a9d00df1da5a2 *NEWS.md
+ad8cdd9b9d46d9aa7be19386c9e2c600 *NEWS.md
 b6427af38c00c0b00cc670dbbd696b45 *R/RcppExports.R
-6cdcadc730bdab783035c3127d962973 *R/datastep.R
+031af12ea3689f37f4271ae9aef9cb27 *R/datastep.R
 b6a017afae803481757c44270be750f9 *R/dictionary.R
 982b4d67e0ef3c9db564555435227fb1 *R/dsarray.R
 7f1a0d0520baedf6cccf1fb93c76bb4f *R/dsattr.R
@@ -79,7 +79,7 @@ b0c1d650bc2ae3f28e3bbc041274602c *man/lib_sync.Rd
 dee2f021a807e694d28c887bf1ed083c *man/lib_unload.Rd
 4db181520293999d0719f59abd4f99bd *man/lib_write.Rd
 6cf396e59bee87da3ab540c3b04f918b *man/libname.Rd
-211b4a38d09f3e2a963eee22a88e0ef7 *man/libr.Rd
+7138abc17d2cdc5b05c6f3d7e878c1a0 *man/libr.Rd
 77e2a3268a188f9ddcfd3b330a383a4b *man/output.Rd
 70485d25bba8d3f60609f3198b384b46 *man/print.lib.Rd
 870621369f3be12fa275f5e0c0419747 *man/print.specs.Rd
@@ -149,7 +149,8 @@ e8707b822e7be0e601e258a5ee741675 *tests/testthat/data/demo_studyb.xls
 1b67416dbce577268d5c77ba123dde31 *tests/testthat/data/demo_studyb.xpt
 21544335a65cdf65ad21f5c8a961ec02 *tests/testthat/data/vect.rds
 d41d8cd98f00b204e9800998ecf8427e *tests/testthat/data2/keep.txt
-4cd75115dc48260eab504e2341f1ab97 *tests/testthat/test-datastep.R
+f3bdadb8cf7e2972374200179b77003f *tests/testthat/programs/dstest.R
+8233b53a021c3bdc3ed882d5b975fd3f *tests/testthat/test-datastep.R
 165888fcc568be9bd84d22d794d9e75a *tests/testthat/test-dictionary.R
 8f8ef28292fe566c1a128d75b1d52719 *tests/testthat/test-dsarray.R
 dd0fb5b679eb77ac2b01bebbd12d93b0 *tests/testthat/test-dsattr.R
