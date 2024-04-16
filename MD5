@@ -1,6 +1,6 @@
-414eba7218b7b99daf052848bfba4440 *DESCRIPTION
+ac9b1579ce69e1211baecb59ab0dd44c *DESCRIPTION
 6b78d23a7ae1f5596d481a85fdb39762 *NAMESPACE
-ad8cdd9b9d46d9aa7be19386c9e2c600 *NEWS.md
+236c5014698bd16d87aeae84035cc18f *NEWS.md
 b6427af38c00c0b00cc670dbbd696b45 *R/RcppExports.R
 031af12ea3689f37f4271ae9aef9cb27 *R/datastep.R
 b6a017afae803481757c44270be750f9 *R/dictionary.R
@@ -11,7 +11,7 @@ c637fd7ee150e36156104575dc6f6287 *R/libname.R
 85d7b5b6311702946dc79a1ef52e9137 *R/libr-package.R
 52533b4f8b62a5ef4498b04738586af7 *R/libr.R
 3f0361e8a8dd42b9db6904f74eadda4e *R/specs.R
-54dcfa7095e967835000e6c7bad7d1b8 *R/utilities.R
+0456414d1006020cbd389d5cb1b738c6 *R/utilities.R
 b2c07546f441265d8f0afcdaa3ae99fc *README.md
 562fd3807a8a6f851803040f32fb2b85 *build/vignette.rds
 9f76ba0910a442a9757668462e35e869 *inst/doc/libr-basics.R
@@ -154,11 +154,11 @@ f3bdadb8cf7e2972374200179b77003f *tests/testthat/programs/dstest.R
 165888fcc568be9bd84d22d794d9e75a *tests/testthat/test-dictionary.R
 8f8ef28292fe566c1a128d75b1d52719 *tests/testthat/test-dsarray.R
 dd0fb5b679eb77ac2b01bebbd12d93b0 *tests/testthat/test-dsattr.R
-a33b41fe005b8a17b9203177507bdb96 *tests/testthat/test-libname.R
+599b7805a04004406a41bcfa6c15ebdb *tests/testthat/test-libname.R
 01a072695e2809b7872fb77a48bfb489 *tests/testthat/test-manipulation.R
 281be52f4706a9442668b6bd06f1082b *tests/testthat/test-performance.R
 719508013ff5e0d51c67489a9d4a485c *tests/testthat/test-specs.R
-c301ed9d5f55f313185f22dae6ead82e *tests/testthat/test-utilities.R
+76beeee544a45d4cc08f20a89055dbd5 *tests/testthat/test-utilities.R
 232bd7156765048da4ec6ce7e49dd588 *vignettes/libr-basics.Rmd
 7fcdb231c25adacb180c74fb02273f8f *vignettes/libr-datastep.Rmd
 dc0071d3688666af08c2ea9898b2edda *vignettes/libr-disclaimer.Rmd
