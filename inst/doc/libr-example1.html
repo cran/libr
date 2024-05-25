@@ -49,7 +49,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -381,103 +381,96 @@ or downloaded directly from the <strong>libr</strong> GitHub site <a href="https
 <span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a><span class="co"># Define data library</span></span>
 <span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a><span class="fu">libname</span>(sdtm, pkg, <span class="st">&quot;csv&quot;</span>, <span class="at">quiet =</span> <span class="cn">TRUE</span>) </span>
 <span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a></span>
-<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a><span class="co"># Loads data into workspace</span></span>
-<span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a><span class="fu">lib_load</span>(sdtm)</span>
-<span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a></span>
-<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a><span class="co"># Prepare data</span></span>
-<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a>dm_mod <span class="ot">&lt;-</span> sdtm.DM <span class="sc">%&gt;%</span> </span>
-<span id="cb1-33"><a href="#cb1-33" tabindex="-1"></a>  <span class="fu">select</span>(USUBJID, SEX, AGE, ARM) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-34"><a href="#cb1-34" tabindex="-1"></a>  <span class="fu">filter</span>(ARM <span class="sc">!=</span> <span class="st">&quot;SCREEN FAILURE&quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-35"><a href="#cb1-35" tabindex="-1"></a>  <span class="fu">datastep</span>({</span>
-<span id="cb1-36"><a href="#cb1-36" tabindex="-1"></a>    </span>
-<span id="cb1-37"><a href="#cb1-37" tabindex="-1"></a>    <span class="cf">if</span> (AGE <span class="sc">&gt;=</span> <span class="dv">18</span> <span class="sc">&amp;</span> AGE <span class="sc">&lt;=</span> <span class="dv">24</span>)</span>
-<span id="cb1-38"><a href="#cb1-38" tabindex="-1"></a>      AGECAT <span class="ot">=</span> <span class="st">&quot;18 to 24&quot;</span></span>
-<span id="cb1-39"><a href="#cb1-39" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (AGE <span class="sc">&gt;=</span> <span class="dv">25</span> <span class="sc">&amp;</span> AGE <span class="sc">&lt;=</span> <span class="dv">44</span>)</span>
-<span id="cb1-40"><a href="#cb1-40" tabindex="-1"></a>      AGECAT <span class="ot">=</span> <span class="st">&quot;25 to 44&quot;</span></span>
-<span id="cb1-41"><a href="#cb1-41" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (AGE <span class="sc">&gt;=</span> <span class="dv">45</span> <span class="sc">&amp;</span> AGE <span class="sc">&lt;=</span> <span class="dv">64</span>)</span>
-<span id="cb1-42"><a href="#cb1-42" tabindex="-1"></a>      AGECAT <span class="ot">&lt;-</span> <span class="st">&quot;45 to 64&quot;</span></span>
-<span id="cb1-43"><a href="#cb1-43" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (AGE <span class="sc">&gt;=</span> <span class="dv">65</span>)</span>
-<span id="cb1-44"><a href="#cb1-44" tabindex="-1"></a>      AGECAT <span class="ot">&lt;-</span> <span class="st">&quot;&gt;= 65&quot;</span></span>
-<span id="cb1-45"><a href="#cb1-45" tabindex="-1"></a>    </span>
-<span id="cb1-46"><a href="#cb1-46" tabindex="-1"></a>  }) <span class="sc">%&gt;%</span> <span class="fu">put</span>()</span>
-<span id="cb1-47"><a href="#cb1-47" tabindex="-1"></a></span>
-<span id="cb1-48"><a href="#cb1-48" tabindex="-1"></a><span class="fu">put</span>(<span class="st">&quot;Get population counts&quot;</span>)</span>
-<span id="cb1-49"><a href="#cb1-49" tabindex="-1"></a>arm_pop <span class="ot">&lt;-</span> <span class="fu">count</span>(dm_mod, ARM) <span class="sc">%&gt;%</span> <span class="fu">put</span>()</span>
-<span id="cb1-50"><a href="#cb1-50" tabindex="-1"></a>sex_pop <span class="ot">&lt;-</span> <span class="fu">count</span>(dm_mod, SEX) <span class="sc">%&gt;%</span> <span class="fu">put</span>()</span>
-<span id="cb1-51"><a href="#cb1-51" tabindex="-1"></a>agecat_pop <span class="ot">&lt;-</span> <span class="fu">count</span>(dm_mod, AGECAT) <span class="sc">%&gt;%</span> <span class="fu">put</span>()</span>
-<span id="cb1-52"><a href="#cb1-52" tabindex="-1"></a></span>
-<span id="cb1-53"><a href="#cb1-53" tabindex="-1"></a><span class="co"># Convert agecat to factor so rows will sort correctly</span></span>
-<span id="cb1-54"><a href="#cb1-54" tabindex="-1"></a>agecat_pop<span class="sc">$</span>AGECAT <span class="ot">&lt;-</span> <span class="fu">factor</span>(agecat_pop<span class="sc">$</span>AGECAT, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;18 to 24&quot;</span>, </span>
-<span id="cb1-55"><a href="#cb1-55" tabindex="-1"></a>                                                          <span class="st">&quot;25 to 44&quot;</span>,</span>
-<span id="cb1-56"><a href="#cb1-56" tabindex="-1"></a>                                                          <span class="st">&quot;45 to 64&quot;</span>,</span>
-<span id="cb1-57"><a href="#cb1-57" tabindex="-1"></a>                                                          <span class="st">&quot;&gt;= 65&quot;</span>))</span>
-<span id="cb1-58"><a href="#cb1-58" tabindex="-1"></a><span class="co"># Sort agecat</span></span>
-<span id="cb1-59"><a href="#cb1-59" tabindex="-1"></a>agecat_pop <span class="ot">&lt;-</span> agecat_pop <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(AGECAT)</span>
+<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a><span class="co"># Prepare data</span></span>
+<span id="cb1-29"><a href="#cb1-29" tabindex="-1"></a>dm_mod <span class="ot">&lt;-</span> sdtm<span class="sc">$</span>DM <span class="sc">%&gt;%</span> </span>
+<span id="cb1-30"><a href="#cb1-30" tabindex="-1"></a>  <span class="fu">select</span>(USUBJID, SEX, AGE, ARM) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-31"><a href="#cb1-31" tabindex="-1"></a>  <span class="fu">filter</span>(ARM <span class="sc">!=</span> <span class="st">&quot;SCREEN FAILURE&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-32"><a href="#cb1-32" tabindex="-1"></a>  <span class="fu">datastep</span>({</span>
+<span id="cb1-33"><a href="#cb1-33" tabindex="-1"></a>    </span>
+<span id="cb1-34"><a href="#cb1-34" tabindex="-1"></a>    <span class="cf">if</span> (AGE <span class="sc">&gt;=</span> <span class="dv">18</span> <span class="sc">&amp;</span> AGE <span class="sc">&lt;=</span> <span class="dv">24</span>)</span>
+<span id="cb1-35"><a href="#cb1-35" tabindex="-1"></a>      AGECAT <span class="ot">=</span> <span class="st">&quot;18 to 24&quot;</span></span>
+<span id="cb1-36"><a href="#cb1-36" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (AGE <span class="sc">&gt;=</span> <span class="dv">25</span> <span class="sc">&amp;</span> AGE <span class="sc">&lt;=</span> <span class="dv">44</span>)</span>
+<span id="cb1-37"><a href="#cb1-37" tabindex="-1"></a>      AGECAT <span class="ot">=</span> <span class="st">&quot;25 to 44&quot;</span></span>
+<span id="cb1-38"><a href="#cb1-38" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (AGE <span class="sc">&gt;=</span> <span class="dv">45</span> <span class="sc">&amp;</span> AGE <span class="sc">&lt;=</span> <span class="dv">64</span>)</span>
+<span id="cb1-39"><a href="#cb1-39" tabindex="-1"></a>      AGECAT <span class="ot">&lt;-</span> <span class="st">&quot;45 to 64&quot;</span></span>
+<span id="cb1-40"><a href="#cb1-40" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> (AGE <span class="sc">&gt;=</span> <span class="dv">65</span>)</span>
+<span id="cb1-41"><a href="#cb1-41" tabindex="-1"></a>      AGECAT <span class="ot">&lt;-</span> <span class="st">&quot;&gt;= 65&quot;</span></span>
+<span id="cb1-42"><a href="#cb1-42" tabindex="-1"></a>    </span>
+<span id="cb1-43"><a href="#cb1-43" tabindex="-1"></a>  }) <span class="sc">%&gt;%</span> <span class="fu">put</span>()</span>
+<span id="cb1-44"><a href="#cb1-44" tabindex="-1"></a></span>
+<span id="cb1-45"><a href="#cb1-45" tabindex="-1"></a><span class="fu">put</span>(<span class="st">&quot;Get population counts&quot;</span>)</span>
+<span id="cb1-46"><a href="#cb1-46" tabindex="-1"></a>arm_pop <span class="ot">&lt;-</span> <span class="fu">count</span>(dm_mod, ARM) <span class="sc">%&gt;%</span> <span class="fu">put</span>()</span>
+<span id="cb1-47"><a href="#cb1-47" tabindex="-1"></a>sex_pop <span class="ot">&lt;-</span> <span class="fu">count</span>(dm_mod, SEX) <span class="sc">%&gt;%</span> <span class="fu">put</span>()</span>
+<span id="cb1-48"><a href="#cb1-48" tabindex="-1"></a>agecat_pop <span class="ot">&lt;-</span> <span class="fu">count</span>(dm_mod, AGECAT) <span class="sc">%&gt;%</span> <span class="fu">put</span>()</span>
+<span id="cb1-49"><a href="#cb1-49" tabindex="-1"></a></span>
+<span id="cb1-50"><a href="#cb1-50" tabindex="-1"></a><span class="co"># Convert agecat to factor so rows will sort correctly</span></span>
+<span id="cb1-51"><a href="#cb1-51" tabindex="-1"></a>agecat_pop<span class="sc">$</span>AGECAT <span class="ot">&lt;-</span> <span class="fu">factor</span>(agecat_pop<span class="sc">$</span>AGECAT, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;18 to 24&quot;</span>, </span>
+<span id="cb1-52"><a href="#cb1-52" tabindex="-1"></a>                                                          <span class="st">&quot;25 to 44&quot;</span>,</span>
+<span id="cb1-53"><a href="#cb1-53" tabindex="-1"></a>                                                          <span class="st">&quot;45 to 64&quot;</span>,</span>
+<span id="cb1-54"><a href="#cb1-54" tabindex="-1"></a>                                                          <span class="st">&quot;&gt;= 65&quot;</span>))</span>
+<span id="cb1-55"><a href="#cb1-55" tabindex="-1"></a><span class="co"># Sort agecat</span></span>
+<span id="cb1-56"><a href="#cb1-56" tabindex="-1"></a>agecat_pop <span class="ot">&lt;-</span> agecat_pop <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(AGECAT)</span>
+<span id="cb1-57"><a href="#cb1-57" tabindex="-1"></a></span>
+<span id="cb1-58"><a href="#cb1-58" tabindex="-1"></a></span>
+<span id="cb1-59"><a href="#cb1-59" tabindex="-1"></a><span class="co"># Create Plots ------------------------------------------------------------</span></span>
 <span id="cb1-60"><a href="#cb1-60" tabindex="-1"></a></span>
 <span id="cb1-61"><a href="#cb1-61" tabindex="-1"></a></span>
-<span id="cb1-62"><a href="#cb1-62" tabindex="-1"></a><span class="co"># Create Plots ------------------------------------------------------------</span></span>
-<span id="cb1-63"><a href="#cb1-63" tabindex="-1"></a></span>
-<span id="cb1-64"><a href="#cb1-64" tabindex="-1"></a></span>
-<span id="cb1-65"><a href="#cb1-65" tabindex="-1"></a>plt1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> arm_pop, <span class="fu">aes</span>(<span class="at">x =</span> ARM, <span class="at">y =</span> n)) <span class="sc">+</span></span>
-<span id="cb1-66"><a href="#cb1-66" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill =</span> <span class="st">&quot;#0000A0&quot;</span>) <span class="sc">+</span></span>
-<span id="cb1-67"><a href="#cb1-67" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> n), <span class="at">vjust =</span> <span class="fl">1.5</span>, <span class="at">colour =</span> <span class="st">&quot;white&quot;</span>) <span class="sc">+</span></span>
-<span id="cb1-68"><a href="#cb1-68" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Treatment Group&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Number of Subjects (n)&quot;</span>)</span>
-<span id="cb1-69"><a href="#cb1-69" tabindex="-1"></a></span>
-<span id="cb1-70"><a href="#cb1-70" tabindex="-1"></a>plt2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> sex_pop, <span class="fu">aes</span>(<span class="at">x =</span> SEX, <span class="at">y =</span> n)) <span class="sc">+</span></span>
-<span id="cb1-71"><a href="#cb1-71" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill =</span> <span class="st">&quot;#00A000&quot;</span>) <span class="sc">+</span></span>
-<span id="cb1-72"><a href="#cb1-72" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> n), <span class="at">vjust =</span> <span class="fl">1.5</span>, <span class="at">colour =</span> <span class="st">&quot;white&quot;</span>) <span class="sc">+</span></span>
-<span id="cb1-73"><a href="#cb1-73" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Biological Sex&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Number of Subjects (n)&quot;</span>)</span>
-<span id="cb1-74"><a href="#cb1-74" tabindex="-1"></a></span>
-<span id="cb1-75"><a href="#cb1-75" tabindex="-1"></a>plt3 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> agecat_pop, <span class="fu">aes</span>(<span class="at">x =</span> AGECAT, <span class="at">y =</span> n)) <span class="sc">+</span></span>
-<span id="cb1-76"><a href="#cb1-76" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill =</span> <span class="st">&quot;#A00000&quot;</span>) <span class="sc">+</span></span>
-<span id="cb1-77"><a href="#cb1-77" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> n), <span class="at">vjust =</span> <span class="fl">1.5</span>, <span class="at">colour =</span> <span class="st">&quot;white&quot;</span>) <span class="sc">+</span></span>
-<span id="cb1-78"><a href="#cb1-78" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Age Categories&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Number of Subjects (n)&quot;</span>)</span>
+<span id="cb1-62"><a href="#cb1-62" tabindex="-1"></a>plt1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> arm_pop, <span class="fu">aes</span>(<span class="at">x =</span> ARM, <span class="at">y =</span> n)) <span class="sc">+</span></span>
+<span id="cb1-63"><a href="#cb1-63" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill =</span> <span class="st">&quot;#0000A0&quot;</span>) <span class="sc">+</span></span>
+<span id="cb1-64"><a href="#cb1-64" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> n), <span class="at">vjust =</span> <span class="fl">1.5</span>, <span class="at">colour =</span> <span class="st">&quot;white&quot;</span>) <span class="sc">+</span></span>
+<span id="cb1-65"><a href="#cb1-65" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Treatment Group&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Number of Subjects (n)&quot;</span>)</span>
+<span id="cb1-66"><a href="#cb1-66" tabindex="-1"></a></span>
+<span id="cb1-67"><a href="#cb1-67" tabindex="-1"></a>plt2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> sex_pop, <span class="fu">aes</span>(<span class="at">x =</span> SEX, <span class="at">y =</span> n)) <span class="sc">+</span></span>
+<span id="cb1-68"><a href="#cb1-68" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill =</span> <span class="st">&quot;#00A000&quot;</span>) <span class="sc">+</span></span>
+<span id="cb1-69"><a href="#cb1-69" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> n), <span class="at">vjust =</span> <span class="fl">1.5</span>, <span class="at">colour =</span> <span class="st">&quot;white&quot;</span>) <span class="sc">+</span></span>
+<span id="cb1-70"><a href="#cb1-70" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Biological Sex&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Number of Subjects (n)&quot;</span>)</span>
+<span id="cb1-71"><a href="#cb1-71" tabindex="-1"></a></span>
+<span id="cb1-72"><a href="#cb1-72" tabindex="-1"></a>plt3 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> agecat_pop, <span class="fu">aes</span>(<span class="at">x =</span> AGECAT, <span class="at">y =</span> n)) <span class="sc">+</span></span>
+<span id="cb1-73"><a href="#cb1-73" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill =</span> <span class="st">&quot;#A00000&quot;</span>) <span class="sc">+</span></span>
+<span id="cb1-74"><a href="#cb1-74" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> n), <span class="at">vjust =</span> <span class="fl">1.5</span>, <span class="at">colour =</span> <span class="st">&quot;white&quot;</span>) <span class="sc">+</span></span>
+<span id="cb1-75"><a href="#cb1-75" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Age Categories&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Number of Subjects (n)&quot;</span>)</span>
+<span id="cb1-76"><a href="#cb1-76" tabindex="-1"></a></span>
+<span id="cb1-77"><a href="#cb1-77" tabindex="-1"></a></span>
+<span id="cb1-78"><a href="#cb1-78" tabindex="-1"></a><span class="co"># Report ------------------------------------------------------------------</span></span>
 <span id="cb1-79"><a href="#cb1-79" tabindex="-1"></a></span>
 <span id="cb1-80"><a href="#cb1-80" tabindex="-1"></a></span>
-<span id="cb1-81"><a href="#cb1-81" tabindex="-1"></a><span class="co"># Report ------------------------------------------------------------------</span></span>
+<span id="cb1-81"><a href="#cb1-81" tabindex="-1"></a><span class="fu">sep</span>(<span class="st">&quot;Create and print report&quot;</span>)</span>
 <span id="cb1-82"><a href="#cb1-82" tabindex="-1"></a></span>
 <span id="cb1-83"><a href="#cb1-83" tabindex="-1"></a></span>
-<span id="cb1-84"><a href="#cb1-84" tabindex="-1"></a><span class="fu">sep</span>(<span class="st">&quot;Create and print report&quot;</span>)</span>
-<span id="cb1-85"><a href="#cb1-85" tabindex="-1"></a></span>
+<span id="cb1-84"><a href="#cb1-84" tabindex="-1"></a>page1 <span class="ot">&lt;-</span> <span class="fu">create_plot</span>(plt1, <span class="fl">4.5</span>, <span class="dv">7</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-85"><a href="#cb1-85" tabindex="-1"></a>  <span class="fu">titles</span>(<span class="st">&quot;Figure 1.1&quot;</span>, <span class="st">&quot;Distribution of Subjects by Treatment Group&quot;</span>)</span>
 <span id="cb1-86"><a href="#cb1-86" tabindex="-1"></a></span>
-<span id="cb1-87"><a href="#cb1-87" tabindex="-1"></a>page1 <span class="ot">&lt;-</span> <span class="fu">create_plot</span>(plt1, <span class="fl">4.5</span>, <span class="dv">7</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-88"><a href="#cb1-88" tabindex="-1"></a>  <span class="fu">titles</span>(<span class="st">&quot;Figure 1.1&quot;</span>, <span class="st">&quot;Distribution of Subjects by Treatment Group&quot;</span>)</span>
+<span id="cb1-87"><a href="#cb1-87" tabindex="-1"></a>page2 <span class="ot">&lt;-</span> <span class="fu">create_plot</span>(plt2, <span class="fl">4.5</span>, <span class="dv">7</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-88"><a href="#cb1-88" tabindex="-1"></a>  <span class="fu">titles</span>(<span class="st">&quot;Figure 1.2&quot;</span>, <span class="st">&quot;Distribution of Subjects by Biological Sex&quot;</span>)</span>
 <span id="cb1-89"><a href="#cb1-89" tabindex="-1"></a></span>
-<span id="cb1-90"><a href="#cb1-90" tabindex="-1"></a>page2 <span class="ot">&lt;-</span> <span class="fu">create_plot</span>(plt2, <span class="fl">4.5</span>, <span class="dv">7</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-91"><a href="#cb1-91" tabindex="-1"></a>  <span class="fu">titles</span>(<span class="st">&quot;Figure 1.2&quot;</span>, <span class="st">&quot;Distribution of Subjects by Biological Sex&quot;</span>)</span>
+<span id="cb1-90"><a href="#cb1-90" tabindex="-1"></a>page3 <span class="ot">&lt;-</span> <span class="fu">create_plot</span>(plt3, <span class="fl">4.5</span>, <span class="dv">7</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-91"><a href="#cb1-91" tabindex="-1"></a>  <span class="fu">titles</span>(<span class="st">&quot;Figure 1.2&quot;</span>, <span class="st">&quot;Distribution of Subjects by Age Category&quot;</span>)</span>
 <span id="cb1-92"><a href="#cb1-92" tabindex="-1"></a></span>
-<span id="cb1-93"><a href="#cb1-93" tabindex="-1"></a>page3 <span class="ot">&lt;-</span> <span class="fu">create_plot</span>(plt3, <span class="fl">4.5</span>, <span class="dv">7</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-94"><a href="#cb1-94" tabindex="-1"></a>  <span class="fu">titles</span>(<span class="st">&quot;Figure 1.2&quot;</span>, <span class="st">&quot;Distribution of Subjects by Age Category&quot;</span>)</span>
-<span id="cb1-95"><a href="#cb1-95" tabindex="-1"></a></span>
-<span id="cb1-96"><a href="#cb1-96" tabindex="-1"></a>rpt <span class="ot">&lt;-</span> <span class="fu">create_report</span>(<span class="fu">file.path</span>(tmp, <span class="st">&quot;./output/example1.rtf&quot;</span>), <span class="at">output_type =</span> <span class="st">&quot;RTF&quot;</span>, </span>
-<span id="cb1-97"><a href="#cb1-97" tabindex="-1"></a>                     <span class="at">font =</span> <span class="st">&quot;Arial&quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-98"><a href="#cb1-98" tabindex="-1"></a>  <span class="fu">set_margins</span>(<span class="at">top =</span> <span class="dv">1</span>, <span class="at">bottom =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-99"><a href="#cb1-99" tabindex="-1"></a>  <span class="fu">page_header</span>(<span class="st">&quot;Sponsor: Company&quot;</span>, <span class="st">&quot;Study: ABC&quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-100"><a href="#cb1-100" tabindex="-1"></a>  <span class="fu">add_content</span>(page1) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-101"><a href="#cb1-101" tabindex="-1"></a>  <span class="fu">add_content</span>(page2) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-102"><a href="#cb1-102" tabindex="-1"></a>  <span class="fu">add_content</span>(page3) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-103"><a href="#cb1-103" tabindex="-1"></a>  <span class="fu">footnotes</span>(<span class="st">&quot;Program: DM_Figure.R&quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-104"><a href="#cb1-104" tabindex="-1"></a>  <span class="fu">page_footer</span>(<span class="fu">paste0</span>(<span class="st">&quot;Date Produced: &quot;</span>, <span class="fu">fapply</span>(<span class="fu">Sys.time</span>(), <span class="st">&quot;%d%b%y %H:%M&quot;</span>)), </span>
-<span id="cb1-105"><a href="#cb1-105" tabindex="-1"></a>              <span class="at">right =</span> <span class="st">&quot;Page [pg] of [tpg]&quot;</span>)</span>
+<span id="cb1-93"><a href="#cb1-93" tabindex="-1"></a>rpt <span class="ot">&lt;-</span> <span class="fu">create_report</span>(<span class="fu">file.path</span>(tmp, <span class="st">&quot;./output/example1.rtf&quot;</span>), <span class="at">output_type =</span> <span class="st">&quot;RTF&quot;</span>, </span>
+<span id="cb1-94"><a href="#cb1-94" tabindex="-1"></a>                     <span class="at">font =</span> <span class="st">&quot;Arial&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-95"><a href="#cb1-95" tabindex="-1"></a>  <span class="fu">set_margins</span>(<span class="at">top =</span> <span class="dv">1</span>, <span class="at">bottom =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-96"><a href="#cb1-96" tabindex="-1"></a>  <span class="fu">page_header</span>(<span class="st">&quot;Sponsor: Company&quot;</span>, <span class="st">&quot;Study: ABC&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-97"><a href="#cb1-97" tabindex="-1"></a>  <span class="fu">add_content</span>(page1) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-98"><a href="#cb1-98" tabindex="-1"></a>  <span class="fu">add_content</span>(page2) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-99"><a href="#cb1-99" tabindex="-1"></a>  <span class="fu">add_content</span>(page3) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-100"><a href="#cb1-100" tabindex="-1"></a>  <span class="fu">footnotes</span>(<span class="st">&quot;Program: DM_Figure.R&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-101"><a href="#cb1-101" tabindex="-1"></a>  <span class="fu">page_footer</span>(<span class="fu">paste0</span>(<span class="st">&quot;Date Produced: &quot;</span>, <span class="fu">fapply</span>(<span class="fu">Sys.time</span>(), <span class="st">&quot;%d%b%y %H:%M&quot;</span>)), </span>
+<span id="cb1-102"><a href="#cb1-102" tabindex="-1"></a>              <span class="at">right =</span> <span class="st">&quot;Page [pg] of [tpg]&quot;</span>)</span>
+<span id="cb1-103"><a href="#cb1-103" tabindex="-1"></a></span>
+<span id="cb1-104"><a href="#cb1-104" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">write_report</span>(rpt)</span>
+<span id="cb1-105"><a href="#cb1-105" tabindex="-1"></a></span>
 <span id="cb1-106"><a href="#cb1-106" tabindex="-1"></a></span>
-<span id="cb1-107"><a href="#cb1-107" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">write_report</span>(rpt)</span>
-<span id="cb1-108"><a href="#cb1-108" tabindex="-1"></a></span>
+<span id="cb1-107"><a href="#cb1-107" tabindex="-1"></a><span class="co"># Clean Up ----------------------------------------------------------------</span></span>
+<span id="cb1-108"><a href="#cb1-108" tabindex="-1"></a><span class="fu">sep</span>(<span class="st">&quot;Clean Up&quot;</span>)</span>
 <span id="cb1-109"><a href="#cb1-109" tabindex="-1"></a></span>
-<span id="cb1-110"><a href="#cb1-110" tabindex="-1"></a><span class="co"># Clean Up ----------------------------------------------------------------</span></span>
-<span id="cb1-111"><a href="#cb1-111" tabindex="-1"></a><span class="fu">sep</span>(<span class="st">&quot;Clean Up&quot;</span>)</span>
+<span id="cb1-110"><a href="#cb1-110" tabindex="-1"></a><span class="co"># Close log</span></span>
+<span id="cb1-111"><a href="#cb1-111" tabindex="-1"></a><span class="fu">log_close</span>()</span>
 <span id="cb1-112"><a href="#cb1-112" tabindex="-1"></a></span>
-<span id="cb1-113"><a href="#cb1-113" tabindex="-1"></a><span class="co"># Unload library from workspace</span></span>
-<span id="cb1-114"><a href="#cb1-114" tabindex="-1"></a><span class="fu">lib_unload</span>(sdtm)</span>
+<span id="cb1-113"><a href="#cb1-113" tabindex="-1"></a><span class="co"># View log</span></span>
+<span id="cb1-114"><a href="#cb1-114" tabindex="-1"></a><span class="co"># file.show(lf)</span></span>
 <span id="cb1-115"><a href="#cb1-115" tabindex="-1"></a></span>
-<span id="cb1-116"><a href="#cb1-116" tabindex="-1"></a><span class="co"># Close log</span></span>
-<span id="cb1-117"><a href="#cb1-117" tabindex="-1"></a><span class="fu">log_close</span>()</span>
-<span id="cb1-118"><a href="#cb1-118" tabindex="-1"></a></span>
-<span id="cb1-119"><a href="#cb1-119" tabindex="-1"></a></span>
-<span id="cb1-120"><a href="#cb1-120" tabindex="-1"></a><span class="co"># View log</span></span>
-<span id="cb1-121"><a href="#cb1-121" tabindex="-1"></a><span class="fu">writeLines</span>(<span class="fu">readLines</span>(lf, <span class="at">encoding =</span> <span class="st">&quot;UTF-8&quot;</span>))</span>
-<span id="cb1-122"><a href="#cb1-122" tabindex="-1"></a></span>
-<span id="cb1-123"><a href="#cb1-123" tabindex="-1"></a><span class="co"># View report</span></span>
-<span id="cb1-124"><a href="#cb1-124" tabindex="-1"></a><span class="co"># file.show(res$file_path)</span></span></code></pre></div>
+<span id="cb1-116"><a href="#cb1-116" tabindex="-1"></a><span class="co"># View report</span></span>
+<span id="cb1-117"><a href="#cb1-117" tabindex="-1"></a><span class="co"># file.show(res$file_path)</span></span></code></pre></div>
 </div>
 <div id="log" class="section level2">
 <h2>Log</h2>

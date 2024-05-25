@@ -35,11 +35,8 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 #  # Define data library
 #  libname(sdtm, pkg, "csv", quiet = TRUE)
 #  
-#  # Loads data into workspace
-#  lib_load(sdtm)
-#  
 #  # Prepare data
-#  dm_mod <- sdtm.DM %>%
+#  dm_mod <- sdtm$DM %>%
 #    select(USUBJID, SEX, AGE, ARM) %>%
 #    filter(ARM != "SCREEN FAILURE") %>%
 #    datastep({
@@ -120,18 +117,13 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 #  # Clean Up ----------------------------------------------------------------
 #  sep("Clean Up")
 #  
-#  # Unload library from workspace
-#  lib_unload(sdtm)
-#  
 #  # Close log
 #  log_close()
 #  
-#  
 #  # View log
-#  writeLines(readLines(lf, encoding = "UTF-8"))
+#  # file.show(lf)
 #  
 #  # View report
 #  # file.show(res$file_path)
-#  
 #  
 
