@@ -23,11 +23,14 @@ datastep(
   merge = NULL,
   merge_by = NULL,
   merge_in = NULL,
-  log = TRUE
+  log = TRUE,
+  subset = NULL
 )
 }
 \arguments{
-\item{data}{The data to step through.}
+\item{data}{The data to step through.  This parameter is required. Valid
+values are a data frame or a NULL. In the case of a NULL, you must include
+at least one \code{output()} function in the steps.}
 
 \item{steps}{The operations to perform on the data.  This parameter is 
 specified as a set of R statements contained within 
@@ -136,6 +139,12 @@ came from the corresponding table. Use the \code{where} parameter,
 
 \item{log}{Whether or not to log the datastep.  Default is TRUE.  This 
 parameter is used internally.}
+
+\item{subset}{The \code{subset} parameter accepts an \code{expression} object
+that will be used to subset the data.  The \code{subset} expression will be 
+executed \strong{before} the datastep executes.  In this regard, the 
+\code{subset} parameter on the R datastep is similar to the \code{where} clause
+on the SAS datastep.}
 }
 \value{
 The processed data frame, tibble, or data table.
@@ -240,6 +249,10 @@ value of the prior step/row.  This functionality allows you to increment
 values or perform cumulative operations.
 
 \code{calculate} and \code{retain} are both input parameters.
+
+The \code{subset} and \code{where} parameters can both be used to filter
+the datastep data.  The difference is that \code{subset} is an input
+parameter, and \code{where} is an output parameter.
 }
 
 \section{Set and Merge Operations}{
@@ -577,6 +590,26 @@ res
 # 2  A05  23    F   G01 Group1   1   1
 # 3  A02  20    M   G02 Group2   1   1
 # 4  A04  11    M   G03 Group3   1   1
+
+# Example #8: Data NULL
+
+# Create new dataset using output() functions.
+res <- datastep(NULL, 
+                {
+                  ID <- 10
+                  Item <- "Pencil"
+                  output()
+
+                  ID <- 20
+                  Item <- "Scissors"
+                  output()
+                })
+ 
+# View results
+res
+#    ID     Item
+# 1  10   Pencil
+# 2  20 Scissors
 }
 \seealso{
 \code{\link{libname}} function to create a data library, and

@@ -100,6 +100,10 @@ e$output <- list()
 #' 
 #' \code{calculate} and \code{retain} are both input parameters.
 #' 
+#' The \code{subset} and \code{where} parameters can both be used to filter
+#' the datastep data.  The difference is that \code{subset} is an input
+#' parameter, and \code{where} is an output parameter.  
+#' 
 #' @section Set and Merge Operations:
 #' The \code{datastep} function allows you to join one or more input datasets 
 #' into a single output dataset.  There are two operations in this regard:
@@ -176,7 +180,9 @@ e$output <- list()
 #' other techniques for processing your data.  While there is no 
 #' built-in restriction on the number of rows, performance of the
 #' \code{datastep} can become unacceptable with a large number of rows.
-#' @param data The data to step through.
+#' @param data The data to step through.  This parameter is required. Valid
+#' values are a data frame or a NULL. In the case of a NULL, you must include
+#' at least one \code{output()} function in the steps.
 #' @param steps The operations to perform on the data.  This parameter is 
 #' specified as a set of R statements contained within 
 #' curly braces. If no steps are desired, pass empty curly braces.
@@ -267,6 +273,11 @@ e$output <- list()
 #' \code{delete} function, or \code{output} function to filter desired results.
 #' @param log Whether or not to log the datastep.  Default is TRUE.  This 
 #' parameter is used internally.
+#' @param subset The \code{subset} parameter accepts an \code{expression} object
+#' that will be used to subset the data.  The \code{subset} expression will be 
+#' executed \strong{before} the datastep executes.  In this regard, the 
+#' \code{subset} parameter on the R datastep is similar to the \code{where} clause
+#' on the SAS datastep.
 #' @return The processed data frame, tibble, or data table.  
 #' @family datastep
 #' @seealso \code{\link{libname}} function to create a data library, and
@@ -521,6 +532,26 @@ e$output <- list()
 #' # 2  A05  23    F   G01 Group1   1   1
 #' # 3  A02  20    M   G02 Group2   1   1
 #' # 4  A04  11    M   G03 Group3   1   1
+#' 
+#' # Example #8: Data NULL
+#' 
+#' # Create new dataset using output() functions.
+#' res <- datastep(NULL, 
+#'                 {
+#'                   ID <- 10
+#'                   Item <- "Pencil"
+#'                   output()
+#' 
+#'                   ID <- 20
+#'                   Item <- "Scissors"
+#'                   output()
+#'                 })
+#'  
+#' # View results
+#' res
+#' #    ID     Item
+#' # 1  10   Pencil
+#' # 2  20 Scissors
 #' @import dplyr
 #' @export
 datastep <- function(data, steps, keep = NULL,
@@ -536,17 +567,22 @@ datastep <- function(data, steps, keep = NULL,
                      merge = NULL,
                      merge_by = NULL,
                      merge_in = NULL, 
-                     log = TRUE) {
+                     log = TRUE, 
+                     subset = NULL) {
   
-  if (!"data.frame" %in% class(data))
-    stop("input data must be inherited from data.frame")
+  if (!is.null(data)) {
+    if (!"data.frame" %in% class(data))
+      stop("input data must be inherited from data.frame")
+  } else {
+    data <- data.frame() 
+  }
   
   
   if (!is.null(retain)) {
     if (!"list" %in% class(retain))
       stop("retain parameter value must be of class 'list'")
     
-  }
+  } 
   
   if (!is.null(attrib)) {
     if (!"list" %in% class(attrib))
@@ -577,15 +613,14 @@ datastep <- function(data, steps, keep = NULL,
   merge_by <- tryCatch({if (typeof(merge_by) %in% c("character", "NULL")) merge_by else omby},
                    error = function(cond) {omby})
   
-  
-  # Capture number of starting columns
-  startcols <- ncol(data)
-  
   # Put code in a variable for safe-keeping
   code <- substitute(steps, env = environment())
   
   # Determine if there is an output function
   hout <- has_output(deparse(code))
+  
+  # Capture number of starting columns
+  startcols <- ncol(data)
   
   # Give warning if there are no rows and no output()
   if (hout == FALSE & nrow(data) == 0) {
@@ -701,6 +736,24 @@ datastep <- function(data, steps, keep = NULL,
   if (any(!class(data) %in% c("data.frame", "list"))) {
     data <- as.data.frame(unclass(data), stringsAsFactors = FALSE, 
                           check.names = FALSE) 
+  }
+  
+  # Subset Before
+  if (!is.null(subset)) {
+    
+    data <- tryCatch({subset(data, eval(subset))},
+                     error = function(cond){ret})
+    
+    # Give warning if there are no rows and no output()
+    if (hout == FALSE & nrow(data) == 0) {
+      warning("After subset, input dataset has no rows.") 
+    }
+    
+    rowcount <- nrow(data)
+    
+    # Restore attributes from original data 
+    data <- copy_attributes(data_attributes, data)
+    
   }
   
   # Add automatic variables

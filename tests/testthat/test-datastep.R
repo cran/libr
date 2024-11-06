@@ -1807,3 +1807,64 @@ test_that("ds51: delete() works with NA in data frame.", {
 
 })
 
+
+test_that("ds52: subset clause works.", {
+  
+  df <- datastep(mtcars,
+                 subset = expression(cyl == 8),
+                 {
+                   
+                   if (mpg >= 20)
+                     mpgcat <- "High"
+                   else
+                     mpgcat <- "Low"
+                   
+                   recdt <- as.Date("1974-06-10")
+                   
+                   if (cyl == 8)
+                     is8cyl <- TRUE
+                   else
+                     is8cyl <- FALSE
+                   
+                 })
+  
+  df
+  
+  expect_equal(mean(df$cyl), 8)
+  
+})
+
+
+test_that("ds36: output works with NULL dataset.", {
+  
+  d1 <- datastep(NULL, {
+    
+    bork <- 1
+    fork <- "one"
+    output()
+    
+    bork <- 2
+    fork <- "two"
+    output()
+    
+  })
+  
+  # print(d1)
+  # print(attributes(d1))
+  # print(attributes(d1$fork))
+  d1
+  
+  expect_equal(nrow(d1), 2)
+  expect_equal(ncol(d1), 2)
+  expect_equal(names(d1), c("bork", "fork"))
+  expect_equal(d1[[1, 1]], 1)
+  # if ("factor" %in% class(d1[[2, 2]]))
+  #   expect_equal(d1[[2, 2]], 2)
+  # else
+  #   expect_equal(d1[[2, 2]], "two")
+  
+  expect_warning(datastep(NULL, {a <- 1 }))
+  
+})
+
+
