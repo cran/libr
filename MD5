@@ -1,6 +1,6 @@
-c6f97ff5cfba8e511411cf04ef08e2fd *DESCRIPTION
+7cd3a2e7f36da01c04f332f32cde66ff *DESCRIPTION
 6b78d23a7ae1f5596d481a85fdb39762 *NAMESPACE
-6efaf2b06aa7869408750b021a2efbb1 *NEWS.md
+187bec57540803144c948f397e4e4972 *NEWS.md
 3b79cfc5c1a3f39fe8a67e686cfa1767 *R/RcppExports.R
 eceb496ca1f540fdea151a4d9d197bad *R/datastep.R
 308b267310588929d5be723e4c3495ca *R/dictionary.R
@@ -11,7 +11,7 @@ a8b279e3d078e96f2a9e252ebfe86cde *R/libname.R
 85d7b5b6311702946dc79a1ef52e9137 *R/libr-package.R
 52533b4f8b62a5ef4498b04738586af7 *R/libr.R
 3f0361e8a8dd42b9db6904f74eadda4e *R/specs.R
-551ba070eec84275472fb2e98e97c77a *R/utilities.R
+cf460f85b77ce7c1ccca0cdb60946062 *R/utilities.R
 b2c07546f441265d8f0afcdaa3ae99fc *README.md
 03f393e825f3e32dc798a445e18243d6 *build/vignette.rds
 9f76ba0910a442a9757668462e35e869 *inst/doc/libr-basics.R
@@ -91,7 +91,6 @@ b54e41ca511b1bb479cee4261206cc5e *man/write.specs.Rd
 853bb346f846227216731b938b0d1bfc *src/dshelpers.cpp
 cd55ba080e15d8ed093680dec12872eb *tests/testthat.R
 80f891a130cf08c569b294340d2ad825 *tests/testthat/data/CRF/dm.sas7bdat
-ad42730eec67e8e25aa6772b5d93ae06 *tests/testthat/data/CRF/lab.sas7bdat
 687d58b972d3ef074a7a9fba382951e3 *tests/testthat/data/CRF/pe.sas7bdat
 7de48fa51a328728565264b20be196fa *tests/testthat/data/PE/PE.csv
 8dc46bbc19a91ac3dde9dc3f546180bd *tests/testthat/data/PE/PE.xls
@@ -101,12 +100,10 @@ ad42730eec67e8e25aa6772b5d93ae06 *tests/testthat/data/CRF/lab.sas7bdat
 193c18d45721dce3873d27631a413485 *tests/testthat/data/SDTM/DM.csv
 1e096e76df154d0ae485fd7cde0587b1 *tests/testthat/data/SDTM/DM.rds
 f659ad90c4036e8ef3d7dce399e110ec *tests/testthat/data/SDTM/DS.csv
-f659ad90c4036e8ef3d7dce399e110ec *tests/testthat/data/SDTM/DS_IHOR.csv
 b860c60e63c9bea4841cf40742f91803 *tests/testthat/data/SDTM/EX.csv
 af8e54024c7f330844784bbc1effaa2d *tests/testthat/data/SDTM/IE.csv
 28155c685dfa057569918f57d70bf50d *tests/testthat/data/SDTM/LB.csv
 7de48fa51a328728565264b20be196fa *tests/testthat/data/SDTM/PE.csv
-a5efcfe5b94a61f3a0db53201798adfe *tests/testthat/data/SDTM/QS.csv
 a2fa268f9f3eec3abeff5049d6b864bb *tests/testthat/data/SDTM/RANPOP.rds
 ff77eebd08c8228093e6b2701a481dbf *tests/testthat/data/SDTM/SUPPEX.csv
 e8f89786a8d00cf1d73dfba348369d3f *tests/testthat/data/SDTM/SV.csv
@@ -118,12 +115,10 @@ c6053e50a5493eae30b208e811bd24bd *tests/testthat/data/SDTM/VS.csv
 0b29d176b5260194749f75e9ae11a25a *tests/testthat/data/SDTM/da.sas7bdat
 95e33acfa0ed91886b44625654382cb2 *tests/testthat/data/SDTM/dm.sas7bdat
 91553cc94485f5868e50edc4301654e6 *tests/testthat/data/SDTM/ds.sas7bdat
-603a01b07d2dc2b4966773df866cf043 *tests/testthat/data/SDTM/ds_ihor.sas7bdat
 c97a49683f83d31ed9529a7ff8b7fe11 *tests/testthat/data/SDTM/ex.sas7bdat
 86046e478672563b5a76aa68636366ef *tests/testthat/data/SDTM/ie.sas7bdat
 336b39c8e97cc061b935b60f58ead305 *tests/testthat/data/SDTM/lb.sas7bdat
 08411280a59cb687cfc3902fdb0c12fc *tests/testthat/data/SDTM/pe.sas7bdat
-2a8591eb5b065d6f562aa448eba9b79b *tests/testthat/data/SDTM/qs.sas7bdat
 f0fc88ed2596262e0e97a005bcebe776 *tests/testthat/data/SDTM/suppex.sas7bdat
 5f58b4bee739ca6d5e177659e7093de1 *tests/testthat/data/SDTM/sv.sas7bdat
 41cd49d2566c8367dd38b629178c7b0c *tests/testthat/data/SDTM/vs.sas7bdat
@@ -157,10 +152,10 @@ f3bdadb8cf7e2972374200179b77003f *tests/testthat/programs/dstest.R
 165888fcc568be9bd84d22d794d9e75a *tests/testthat/test-dictionary.R
 8f8ef28292fe566c1a128d75b1d52719 *tests/testthat/test-dsarray.R
 dd0fb5b679eb77ac2b01bebbd12d93b0 *tests/testthat/test-dsattr.R
-bdf3d23d39b38075bdb54827802b4017 *tests/testthat/test-libname.R
-b840b87ca2ea9a3b90cb64e955bf7034 *tests/testthat/test-manipulation.R
+0abbe3d417b01967031c7bd7f66df712 *tests/testthat/test-libname.R
+66ff4ed223b2cbda3615b8a461b1fd82 *tests/testthat/test-manipulation.R
 281be52f4706a9442668b6bd06f1082b *tests/testthat/test-performance.R
-719508013ff5e0d51c67489a9d4a485c *tests/testthat/test-specs.R
+6428fb7affc882bf727d05959c691456 *tests/testthat/test-specs.R
 8d10670beb44036158e9bec0e871c324 *tests/testthat/test-utilities.R
 232bd7156765048da4ec6ce7e49dd588 *vignettes/libr-basics.Rmd
 7fcdb231c25adacb180c74fb02273f8f *vignettes/libr-datastep.Rmd

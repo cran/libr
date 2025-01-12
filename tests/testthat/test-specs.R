@@ -193,7 +193,7 @@ test_that("libname works on SDTM data for csv.", {
   
   libname(dat, file.path(base_path, "SDTM"), "csv", import_specs = lst)
   
-  expect_equal(length(dat), 13)
+  expect_equal(length(dat), 11)
   
 })
 
@@ -204,7 +204,7 @@ test_that("libname works on SDTM data for sas7bdat.", {
   libname(dat, file.path(base_path, "SDTM"), "sas7bdat")
   
 
-  expect_equal(length(dat), 13)
+  expect_equal(length(dat), 11)
 
 })
 
@@ -390,3 +390,4 @@ test_that("print function works as expected.", {
   
   
 })
+
